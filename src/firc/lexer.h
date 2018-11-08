@@ -1,0 +1,130 @@
+// Copyright 2018 by Sascha Brawer <sascha@brawer.ch>
+// SPDX-License-Identifier: Apache-2.0
+//
+// Licensed under the Apache License, Version 2.0 (the “License”);
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an “AS IS” BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+#ifndef FIRC_LEXER_H_
+#define FIRC_LEXER_H_
+
+#include <memory>
+#include <string>
+#include <llvm/ADT/SmallVector.h>
+#include <llvm/ADT/StringRef.h>
+#include <llvm/Support/Allocator.h>
+#include <llvm/Support/UnicodeCharRanges.h>
+
+namespace llvm {
+class line_iterator;
+class MemoryBuffer;
+}  // namespace llvm
+
+namespace firc {
+
+enum TokenType {
+  TOKEN_ERROR_MALFORMED_UNICODE = -2,
+  TOKEN_ERROR_INDENT_MISMATCH = -1,
+  TOKEN_EOF = 0,
+  TOKEN_NEWLINE = 2,
+  TOKEN_INDENT = 3,
+  TOKEN_UNINDENT = 4,
+  TOKEN_IDENTIFIER = 5,
+};
+
+class Lexer {
+public:
+  Lexer(const llvm::MemoryBuffer* buf,
+        llvm::BumpPtrAllocator* allocator);
+  ~Lexer();
+  bool Advance();
+  TokenType CurToken, NextToken;
+  llvm::StringRef CurTokenText, NextTokenText;
+
+private:
+  const uint32_t EndOfFile = 0xFFFFFFFF;
+
+  const unsigned char *BufferPos, *BufferEnd;
+  const unsigned char *CurCharPos, *NextCharPos;
+  uint32_t CurChar, NextChar;
+  uint32_t Line, Column;
+
+  llvm::SmallVector<uint32_t, 16> Indents;
+  llvm::BumpPtrAllocator* Allocator;
+
+  static const llvm::sys::UnicodeCharSet
+      IDStartChars, IDPartChars, WhitespaceChars, PossiblyNotNFKCChars;
+
+  bool isLineSeparator(uint32_t CurChar, uint32_t NextChar) const {
+    return (CurChar == 0x000A || CurChar == 0x000B || CurChar == 0x000C ||
+            (CurChar == 0x000D && NextChar != 0x000A) ||
+            CurChar == 0x0085 || CurChar == 0x2028 || CurChar == 0x2029);
+  }
+
+  bool isWhitespace(uint32_t c) const {
+    if (LLVM_LIKELY(c <= 0x7f)) {
+      return (c >= 9 && c <= 13) || (c == 0x20);
+    } else {
+      return WhitespaceChars.contains(c);
+    }
+  }
+
+  bool isIdentifierStart(uint32_t c) const {
+    if (LLVM_LIKELY(c <= 0x7f)) {
+      return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c == '_');
+    } else {
+      return IDStartChars.contains(c);
+    }
+  }
+
+  bool isIdentifierPart(uint32_t c) const {
+    if (LLVM_LIKELY(c <= 0x7f)) {
+      return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') ||
+             (c >= '0' && c <= '9') || (c == '_');
+    } else {
+      return IDPartChars.contains(c);
+    }
+  }
+
+  // Returns whether character c is certainly in NFKC form.
+  // If the result is false, the character might or might not be part of
+  // a non-NFKC sequence.
+  inline bool isCertainlyNFKC(uint32_t c) const {
+    if (LLVM_LIKELY(c <= 0x7f)) {
+      return true;
+    } else {
+      return !PossiblyNotNFKCChars.contains(c);
+    }
+  }
+
+  void AdvanceChar();
+  void SkipWhitespace();
+
+  llvm::StringRef ConvertToNFKC(const llvm::StringRef UTF8);
+  bool Decompose(const llvm::StringRef UTF8,
+		 llvm::SmallVector<uint32_t, 16> *Decomposed);
+
+  struct CharDecomposition {
+    uint32_t Codepoint;
+    unsigned int DecompositionLength : 8;
+    unsigned int Decomposition : 24;
+  };
+
+  static const CharDecomposition CharDecompositions[];
+  static const uint32_t NumCharDecompositions;
+  static const uint32_t CharDecompositionData[];
+
+  static int CompareCharDecompositions(const void *A, const void *B);
+};
+
+}  // namespace firc
+
+#endif // FIRC_LEXER_H_
