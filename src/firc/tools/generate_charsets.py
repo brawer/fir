@@ -106,13 +106,15 @@ def decompose(c, nfkd):
     return result
 
 
-def write_decompositions(nfkd, out):
+def write_decompositions(nfkd, id_charset, out):
     data = []
     out.write('\nconst uint32_t Lexer::NumCharDecompositions = %d;\n\n' %
               len(nfkd))
     out.write(
         '\nconst Lexer::CharDecomposition Lexer::CharDecompositions[] = {\n')
     for char in sorted(nfkd.keys()):
+        if char not in id_charset:
+            continue
         decomposed = decompose(char, nfkd)
         if len(decomposed) > 1:
             offset = str(len(data))
@@ -144,11 +146,23 @@ def read_properties(propfile):
     return parse_properties(content)
 
 
+def build_charset(ranges):
+    c = set()
+    for start, end in ranges:
+        c.update({ch for ch in range(start, end + 1)})
+    return c
+
+
 with open('src/firc/generated_charsets.cc', 'w') as out:
     _ucd, decomposition = read_ucd()
+
     dprops = read_properties('DerivedCoreProperties.txt')
+    xid_chars = build_charset(dprops['XID_Start'])
+    xid_chars.update(build_charset(dprops['XID_Continue']))
+
     props = read_properties('PropList.txt')
     dnorm_props = read_properties('DerivedNormalizationProps.txt')
+
     out.write('// Generated from %s\n' % URL_PREFIX)
     out.write('// Using generate_charsets.py\n\n')
     out.write('#include <llvm/Support/UnicodeCharRanges.h>\n')
@@ -158,5 +172,5 @@ with open('src/firc/generated_charsets.cc', 'w') as out:
     write_charset('Lexer::IDPartChars', dprops['XID_Continue'], out)
     write_charset('Lexer::WhitespaceChars', props['White_Space'], out)
     write_charset('Lexer::PossiblyNotNFKCChars', dnorm_props['NFKC_QC'], out)
-    write_decompositions(decomposition, out)
+    write_decompositions(decomposition, xid_chars, out)
     out.write('\n}  // namespace firc\n\n')
