@@ -48,23 +48,13 @@ def parse_properties(text):
     return patched
 
 
-def parse_ucd(text):
+def parse_ccc(text):
     result = {}
-    r = re.compile(r'^([0-9A-F]+);[^;]+;([A-Za-z]+);.*$')
-    range_start, range_end, range_class = None, None, None
     for line in text.splitlines():
-        match = r.match(line)
-        if not match:
-            continue
-        char = int(match.group(1), 16)
-        klass = match.group(2)
-        if range_start is None:
-            range_start = char
-        elif range_end != char - 1 or range_class != klass:
-            result.setdefault(range_class, []).append((range_start, range_end))
-            range_start = char
-        range_end, range_class = char, klass
-    result.setdefault(range_class, []).append((range_start, range_end))
+        cols = line.split(';')
+        char, klass = int(cols[0], 16), int(cols[3])
+        if klass != 0:
+            result[char] = klass
     return result
 
 
@@ -134,6 +124,42 @@ def write_decompositions(nfkd, id_charset, out):
     out.write('\n};\n')
 
 
+def write_ccc(ccc, out):
+    table_size = 64
+    tables = []
+    for table_index in range(0, max(ccc.keys()) / table_size + 1):
+        table = [ccc.get(char, 0)
+                 for char in range(table_index * table_size,
+			                      (table_index + 1) * table_size)]
+        tables.append(tuple(table))
+    table_nums = {}
+    for t in tables:
+        table_nums.setdefault(t, len(table_nums))
+    assert table_nums[tuple([0] * table_size)] == 0
+    out.write('\nconst uint16_t Lexer::NumCharClassTables = %d;\n\n' %
+              len(tables))
+    out.write('\nconst uint16_t Lexer::CharClassTable[] = {\n')
+    for i, t in enumerate(tables):
+        if i % 16 == 0:
+            out.write('    ')
+        out.write('%s, ' % table_nums[t])
+        if i % 16 == 15:
+            out.write('\n')
+    out.write('\n};\n')
+    out.write('\nconst uint8_t Lexer::CharClassTableEntries[] = {\n')
+    r = {n:t for t,n in table_nums.items()}
+    for table_id in sorted(r):
+        if table_id > 0:
+            out.write('\n')
+        out.write('  // Table #%d\n' % table_id)
+        for i, klass in enumerate(r[table_id]):
+            if i % 16 == 0:
+                out.write('    ')
+            out.write('%d, ' % klass)
+            if i % 16 == 15:
+                out.write('\n')
+    out.write('\n};\n')
+
 def write_compositions(compositions, out):
     out.write('\nconst uint32_t Lexer::NumCharCompositions = %d;\n\n' %
               len(compositions))
@@ -147,7 +173,7 @@ def write_compositions(compositions, out):
 def read_ucd():
     with open('src/third_party/unicode_data/UnicodeData.txt', 'r') as f:
         content = f.read()
-        return parse_ucd(content), parse_decompositions(content)
+        return parse_ccc(content), parse_decompositions(content)
 
 
 def read_properties(propfile):
@@ -174,7 +200,7 @@ def build_canonical_composition(nfd, excluded, xid_chars):
 
 
 with open('src/firc/generated_charsets.cc', 'w') as out:
-    _ucd, (nfd, nfkd) = read_ucd()
+    ccc, (nfd, nfkd) = read_ucd()
 
     dprops = read_properties('DerivedCoreProperties.txt')
     xid_chars = build_charset(dprops['XID_Start'])
@@ -196,5 +222,6 @@ with open('src/firc/generated_charsets.cc', 'w') as out:
     write_charset('Lexer::WhitespaceChars', props['White_Space'], out)
     write_charset('Lexer::PossiblyNotNFKCChars', dnorm_props['NFKC_QC'], out)
     write_decompositions(nfkd, xid_chars, out)
+    write_ccc(ccc, out)
     write_compositions(compositions, out)
     out.write('\n}  // namespace firc\n\n')

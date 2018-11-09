@@ -254,6 +254,19 @@ bool Lexer::Decompose(const llvm::StringRef UTF8,
   return true;
 }
 
+uint8_t Lexer::getCombiningCharacterClass(uint32_t c) const {
+  if (LLVM_LIKELY(c < 0x0300)) {
+    return 0;
+  }
+
+  uint32_t TableIndex = c >> 6;
+  if (LLVM_UNLIKELY(TableIndex >= NumCharClassTables)) {
+    return 0;
+  }
+
+  return CharClassTableEntries[CharClassTable[TableIndex]];
+}
+
 int Lexer::CompareCharDecompositions(const void *A, const void *B) {
   const uint32_t CA = reinterpret_cast<const CharDecomposition*>(A)->Codepoint;
   const uint32_t CB = reinterpret_cast<const CharDecomposition*>(B)->Codepoint;

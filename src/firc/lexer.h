@@ -130,6 +130,7 @@ private:
   llvm::StringRef ConvertToNFKC(const llvm::StringRef UTF8);
   bool Decompose(const llvm::StringRef UTF8,
                  llvm::SmallVector<uint32_t, 16> *Decomposed);
+  uint8_t getCombiningCharacterClass(uint32_t c) const;
   void Compose(llvm::SmallVector<uint32_t, 16> *Text);
   int32_t ComposeChars(uint32_t a, uint32_t b) const;
 
@@ -142,6 +143,10 @@ private:
   static const CharDecomposition CharDecompositions[];
   static const uint32_t NumCharDecompositions;
   static const uint32_t CharDecompositionData[];
+
+  static const uint16_t NumCharClassTables;
+  static const uint16_t CharClassTable[];
+  static const uint8_t CharClassTableEntries[];
 
   struct CharComposition {
     uint32_t First;
