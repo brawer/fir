@@ -68,6 +68,16 @@ TEST(LexerTest, Identifier) {
   EXPECT_EQ(RunLexer(u8"شناختساز"), u8"ID[شناختساز]");
 }
 
+TEST(LexerTest, Identifier_HangulSyllables) {
+  // Decomposed hangul syllables should get composed.
+  EXPECT_EQ(RunLexer(u8"\u1111\u1171"), u8"ID[\uD4CC]");
+  EXPECT_EQ(RunLexer(u8"\u1111\u1171\u11B6"), u8"ID[\uD4DB]");
+
+  // Already pre-composed hangul syllables should stay composed.
+  EXPECT_EQ(RunLexer(u8"\uD4CC"), u8"ID[\uD4CC]");
+  EXPECT_EQ(RunLexer(u8"\uD4DB"), u8"ID[\uD4DB]");
+}
+
 TEST(LexerTest, Identifier_ShouldConvertToNFKC) {
   EXPECT_EQ(RunLexer(u8"ＦｕｌｌｗｉｄｔｈX１２３"), u8"ID[FullwidthX123]");
   EXPECT_EQ(RunLexer(u8"\u217B"), u8"ID[xii]"); // SMALL ROMAN NUMERAL TWELVE

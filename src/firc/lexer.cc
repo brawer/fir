@@ -167,18 +167,18 @@ void Lexer::SkipWhitespace() {
 
 llvm::StringRef Lexer::ConvertToNFKC(const llvm::StringRef UTF8) {
   // Decompose to NFKD.
-  llvm::SmallVector<uint32_t, 16> Decomposed;
-  if (LLVM_UNLIKELY(!Decompose(UTF8, &Decomposed))) {
+  llvm::SmallVector<uint32_t, 16> Text;
+  if (LLVM_UNLIKELY(!Decompose(UTF8, &Text))) {
     return llvm::StringRef();
   }
 
-  // TODO: Re-compose.
+  Compose(&Text);
 
   // Convert from UTF32 to UTF8 buffer.
   llvm::SmallVector<uint8_t, 64> Converted(
-      Decomposed.size() * UNI_MAX_UTF8_BYTES_PER_CODE_POINT);
-  const uint32_t *SourceStart = Decomposed.data();
-  const uint32_t *SourceEnd = SourceStart + Decomposed.size();
+      Text.size() * UNI_MAX_UTF8_BYTES_PER_CODE_POINT);
+  const uint32_t *SourceStart = Text.data();
+  const uint32_t *SourceEnd = SourceStart + Text.size();
   uint8_t *TargetStart = Converted.data();
   uint8_t *TargetEnd = TargetStart + Converted.size();
   const llvm::ConversionResult ConvResult = llvm::ConvertUTF32toUTF8(
@@ -201,7 +201,6 @@ bool Lexer::Decompose(const llvm::StringRef UTF8,
                       llvm::SmallVector<uint32_t, 16> *Decomposed) {
   const unsigned char *BufferPos = UTF8.bytes_begin();
   const unsigned char *BufferEnd = UTF8.bytes_end();
-  llvm::UTF32 c;
   while (LLVM_LIKELY(BufferPos < BufferEnd)) {
     if (LLVM_LIKELY(*BufferPos <= 0x7F)) {  // fast path for ASCII
       Decomposed->push_back(*BufferPos);
@@ -209,10 +208,27 @@ bool Lexer::Decompose(const llvm::StringRef UTF8,
       continue;
     }
 
+    llvm::UTF32 c = 0;
     const llvm::ConversionResult ConvResult = llvm::convertUTF8Sequence(
         &BufferPos, BufferEnd, &c, llvm::strictConversion);
     if (LLVM_UNLIKELY(ConvResult != llvm::conversionOK)) {
       return false;
+    }
+
+    // The Unicode Standard 11.0, chapter 3.12 “Conjoining Jamo Behavior”,
+    // page 145, section “Arithmetic Decomposition Mapping”.
+    // https://www.unicode.org/versions/Unicode11.0.0/UnicodeStandard-11.0.pdf
+    if (LLVM_UNLIKELY(isHangulSyllable(c))) {
+      const uint32_t SIndex = c - HangulSBase;
+      const uint32_t LIndex = SIndex / HangulNCount;
+      const uint32_t VIndex = (SIndex % HangulNCount) / HangulTCount;
+      const uint32_t TIndex = SIndex % HangulTCount;
+      Decomposed->push_back(HangulLBase + LIndex);
+      Decomposed->push_back(HangulVBase + VIndex);
+      if (TIndex > 0) {
+        Decomposed->push_back(HangulTBase + TIndex);
+      }
+      continue;
     }
 
     const CharDecomposition Key = {c, 0, 0};
@@ -248,6 +264,41 @@ int Lexer::CompareCharDecompositions(const void *A, const void *B) {
   } else {
     return 0;
   }
+}
+
+// Unicode Canonical Composition Algorithm
+// http://www.unicode.org/reports/tr15/
+void Lexer::Compose(llvm::SmallVector<uint32_t, 16> *Text) {
+  for (int i = 0; i < Text->size() - 1;) {
+    uint32_t Composed = ComposeChars((*Text)[i], (*Text)[i + 1]);
+    if (LLVM_UNLIKELY(Composed != 0)) {
+      (*Text)[i] = Composed;
+      Text->erase(&(*Text)[i + 1]);
+      continue;
+    }
+    ++i;
+  }
+}
+
+int32_t Lexer::ComposeChars(uint32_t a, uint32_t b) const {
+  // The Unicode Standard 11.0, chapter 3.12 “Conjoining Jamo Behavior”,
+  // page 146, section “Hangul Syllable Composition”.
+  // https://www.unicode.org/versions/Unicode11.0.0/UnicodeStandard-11.0.pdf
+  if (LLVM_UNLIKELY((a >= HangulLBase && a < HangulLBase + HangulLCount) &&
+                    (b >= HangulVBase && b < HangulVBase + HangulVCount))) {
+    const uint32_t LIndex = a - HangulLBase;
+    const uint32_t VIndex = b - HangulVBase;
+    const uint32_t LVIndex = LIndex * HangulNCount + VIndex * HangulTCount;
+    return HangulSBase + LVIndex;
+  }
+
+  if (LLVM_UNLIKELY((a >= HangulSBase && a < HangulSBase + HangulSCount) &&
+                    (b >= HangulTBase && b < HangulTBase + HangulTCount) &&
+                    ((a - HangulSBase) % HangulTCount) == 0)) {
+    return a + (b - HangulTBase);
+  }
+
+  return 0;
 }
 
 }  // namespace firc

@@ -105,12 +105,33 @@ private:
     }
   }
 
+  // The Unicode Standard 11.0, chapter 3.12 “Conjoining Jamo Behavior”,
+  // page 144, section “Common Constants”.
+  // https://www.unicode.org/versions/Unicode11.0.0/UnicodeStandard-11.0.pdf
+  static const uint32_t HangulSBase = 0xAC00;
+  static const uint32_t HangulLBase = 0x1100;
+  static const uint32_t HangulVBase = 0x1161;
+  static const uint32_t HangulTBase = 0x11A7;
+  static const uint32_t HangulLCount = 19;
+  static const uint32_t HangulVCount = 21;
+  static const uint32_t HangulTCount = 28;
+  static const uint32_t HangulNCount = HangulVCount * HangulTCount;
+  static const uint32_t HangulSCount = HangulLCount * HangulNCount;
+  static_assert(HangulNCount == 588, "NCount should match Unicode standard");
+  static_assert(HangulSCount == 11172, "SCount should match Unicode");
+
+  inline bool isHangulSyllable(uint32_t c) const {
+    return c >= HangulSBase && c < HangulSBase + HangulSCount;
+  }
+
   void AdvanceChar();
   void SkipWhitespace();
 
   llvm::StringRef ConvertToNFKC(const llvm::StringRef UTF8);
   bool Decompose(const llvm::StringRef UTF8,
-		 llvm::SmallVector<uint32_t, 16> *Decomposed);
+                 llvm::SmallVector<uint32_t, 16> *Decomposed);
+  void Compose(llvm::SmallVector<uint32_t, 16> *Text);
+  int32_t ComposeChars(uint32_t a, uint32_t b) const;
 
   struct CharDecomposition {
     uint32_t Codepoint;
