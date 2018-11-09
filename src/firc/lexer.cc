@@ -266,6 +266,26 @@ int Lexer::CompareCharDecompositions(const void *A, const void *B) {
   }
 }
 
+int Lexer::CompareCharCompositions(const void *A, const void *B) {
+  const uint32_t A1 = reinterpret_cast<const CharComposition*>(A)->First;
+  const uint32_t B1 = reinterpret_cast<const CharComposition*>(B)->First;
+  if (A1 < B1) {
+    return -1;
+  } else if (A1 > B1) {
+    return 1;
+  }
+
+  const uint32_t A2 = reinterpret_cast<const CharComposition*>(A)->Second;
+  const uint32_t B2 = reinterpret_cast<const CharComposition*>(B)->Second;
+  if (A2 < B2) {
+    return -1;
+  } else if (A2 > B2) {
+    return 1;
+  }
+
+  return 0;
+}
+
 // Unicode Canonical Composition Algorithm
 // http://www.unicode.org/reports/tr15/
 void Lexer::Compose(llvm::SmallVector<uint32_t, 16> *Text) {
@@ -296,6 +316,15 @@ int32_t Lexer::ComposeChars(uint32_t a, uint32_t b) const {
                     (b >= HangulTBase && b < HangulTBase + HangulTCount) &&
                     ((a - HangulSBase) % HangulTCount) == 0)) {
     return a + (b - HangulTBase);
+  }
+
+  const CharComposition Key = {a, b, 0};
+  const CharComposition *Value =
+        reinterpret_cast<const CharComposition*>(bsearch(
+	    &Key, CharCompositions, NumCharCompositions,
+            sizeof(CharComposition), Lexer::CompareCharCompositions));
+  if (Value != nullptr) {
+    return Value->Composed;
   }
 
   return 0;

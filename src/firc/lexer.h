@@ -143,7 +143,17 @@ private:
   static const uint32_t NumCharDecompositions;
   static const uint32_t CharDecompositionData[];
 
+  struct CharComposition {
+    uint32_t First;
+    uint32_t Second;
+    uint32_t Composed;
+  };
+
+  static const CharComposition CharCompositions[];
+  static const uint32_t NumCharCompositions;
+
   static int CompareCharDecompositions(const void *A, const void *B);
+  static int CompareCharCompositions(const void *A, const void *B);
 };
 
 }  // namespace firc

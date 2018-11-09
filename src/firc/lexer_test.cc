@@ -81,13 +81,10 @@ TEST(LexerTest, Identifier_HangulSyllables) {
 TEST(LexerTest, Identifier_ShouldConvertToNFKC) {
   EXPECT_EQ(RunLexer(u8"ＦｕｌｌｗｉｄｔｈX１２３"), u8"ID[FullwidthX123]");
   EXPECT_EQ(RunLexer(u8"\u217B"), u8"ID[xii]"); // SMALL ROMAN NUMERAL TWELVE
-}
-
-TEST(LexerTest, DISABLED_Identifier_ShouldConvertToNFKC_NotWorkingYet) {
-  EXPECT_EQ(RunLexer(u8"ｼｷﾍﾞﾂｼ"), u8"ID[シキベツシ]");  // needs compose
-
-  // U+01EE LATIN CAPITAL LETTER EZH WITH CARON [Ǯ]
-  EXPECT_EQ(RunLexer(u8"\u01B7\u030C"), u8"ID[Ǯ]");
+  EXPECT_EQ(RunLexer(u8"ｼｷﾍﾞﾂｼ"), u8"ID[シキベツシ]");
+  EXPECT_EQ(RunLexer(u8"Äöü"), u8"ID[Äöü]");
+  EXPECT_EQ(RunLexer(u8"A\u0308"), u8"ID[Ä]");
+  EXPECT_EQ(RunLexer(u8"\u01B7\u030C"), u8"ID[\u01EE]");  // Ǯ
 }
 
 TEST(LexerTest, Indent) {
