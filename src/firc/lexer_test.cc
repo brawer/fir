@@ -85,6 +85,11 @@ TEST(LexerTest, Identifier_ShouldConvertToNFKC) {
   EXPECT_EQ(RunLexer(u8"Äöü"), u8"ID[Äöü]");
   EXPECT_EQ(RunLexer(u8"A\u0308"), u8"ID[Ä]");
   EXPECT_EQ(RunLexer(u8"\u01B7\u030C"), u8"ID[\u01EE]");  // Ǯ
+  EXPECT_EQ(RunLexer(u8"\u1E69"), u8"ID[\u1E69]");
+  EXPECT_EQ(RunLexer(u8"s\u0323\u0307s\u0323\u0307"), u8"ID[\u1E69\u1E69]");
+  EXPECT_EQ(RunLexer(u8"s\u0307\u0323s\u0307\u0323"), u8"ID[\u1E69\u1E69]");
+  EXPECT_EQ(RunLexer(u8"q\u0307\u0323"), u8"ID[q\u0323\u0307]");
+  EXPECT_EQ(RunLexer(u8"q\u0323\u0307"), u8"ID[q\u0323\u0307]");
 }
 
 TEST(LexerTest, Indent) {

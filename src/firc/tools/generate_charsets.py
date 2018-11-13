@@ -125,40 +125,13 @@ def write_decompositions(nfkd, id_charset, out):
 
 
 def write_ccc(ccc, out):
-    table_size = 64
-    tables = []
-    for table_index in range(0, max(ccc.keys()) / table_size + 1):
-        table = [ccc.get(char, 0)
-                 for char in range(table_index * table_size,
-			                      (table_index + 1) * table_size)]
-        tables.append(tuple(table))
-    table_nums = {}
-    for t in tables:
-        table_nums.setdefault(t, len(table_nums))
-    assert table_nums[tuple([0] * table_size)] == 0
-    out.write('\nconst uint16_t Lexer::NumCharClassTables = %d;\n\n' %
-              len(tables))
-    out.write('\nconst uint16_t Lexer::CharClassTable[] = {\n')
-    for i, t in enumerate(tables):
-        if i % 16 == 0:
-            out.write('    ')
-        out.write('%s, ' % table_nums[t])
-        if i % 16 == 15:
-            out.write('\n')
+    out.write('\nconst uint16_t Lexer::NumCCCEntries = %d;\n\n' %
+              len(ccc))
+    out.write('\nconst Lexer::CCCEntry Lexer::CCCEntries[] = {\n')
+    for char, klass in sorted(ccc.items()):
+        out.write('    { 0x%05X, %d},\n' % (char, klass))
     out.write('\n};\n')
-    out.write('\nconst uint8_t Lexer::CharClassTableEntries[] = {\n')
-    r = {n:t for t,n in table_nums.items()}
-    for table_id in sorted(r):
-        if table_id > 0:
-            out.write('\n')
-        out.write('  // Table #%d\n' % table_id)
-        for i, klass in enumerate(r[table_id]):
-            if i % 16 == 0:
-                out.write('    ')
-            out.write('%d, ' % klass)
-            if i % 16 == 15:
-                out.write('\n')
-    out.write('\n};\n')
+
 
 def write_compositions(compositions, out):
     out.write('\nconst uint32_t Lexer::NumCharCompositions = %d;\n\n' %

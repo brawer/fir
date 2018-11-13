@@ -138,9 +138,6 @@ bool Lexer::Advance() {
     NextToken = TOKEN_IDENTIFIER;
     do {
       Normalized = Normalized && isCertainlyNFKC(CurChar);
-      if (CurChar == 0x3300) {
-        printf("********** Normalized: %d\n", Normalized);
-      }
       AdvanceChar();
     } while (isIdentifierPart(CurChar));
     const char* IDEnd = reinterpret_cast<const char*>(CurCharPos);
@@ -250,26 +247,62 @@ bool Lexer::Decompose(const llvm::StringRef UTF8,
     }
   }
 
-  // TODO: Sort combining characters by Combining Character Class.
+  // Sort combining characters by Combining Character Class.
+  for (size_t i = 0; i < Decomposed->size(); ++i) {
+    uint8_t ccc = getCombiningCharClass((*Decomposed)[i]);
+    if (LLVM_UNLIKELY(ccc != 0)) {
+      size_t j = i + 1;
+      while (j < Decomposed->size() &&
+	     (getCombiningCharClass((*Decomposed)[j]) != 0)) {
+        ++j;
+      }
+      if (LLVM_UNLIKELY(j - i > 1)) {
+	std::stable_sort(Decomposed->begin() + i,
+			 Decomposed->begin() + j,
+			 isCCCSmaller);
+      }
+      i = j - 1;
+    }
+  }
+
   return true;
 }
 
-uint8_t Lexer::getCombiningCharacterClass(uint32_t c) const {
+bool Lexer::isCCCSmaller(uint32_t a, uint32_t b) {
+  return getCombiningCharClass(a) < getCombiningCharClass(b);
+}
+
+uint8_t Lexer::getCombiningCharClass(uint32_t c) {
   if (LLVM_LIKELY(c < 0x0300)) {
     return 0;
   }
 
-  uint32_t TableIndex = c >> 6;
-  if (LLVM_UNLIKELY(TableIndex >= NumCharClassTables)) {
-    return 0;
+  const CCCEntry Key = {c, 0};
+  const CCCEntry *Value = reinterpret_cast<const CCCEntry*>(bsearch(
+      &Key, CCCEntries, NumCCCEntries,
+      sizeof(CCCEntry), Lexer::CompareCCCEntries));
+  if (Value != nullptr) {
+    return Value->CombiningCharClass;
   }
 
-  return CharClassTableEntries[CharClassTable[TableIndex]];
+  return 0;
 }
 
 int Lexer::CompareCharDecompositions(const void *A, const void *B) {
   const uint32_t CA = reinterpret_cast<const CharDecomposition*>(A)->Codepoint;
   const uint32_t CB = reinterpret_cast<const CharDecomposition*>(B)->Codepoint;
+  if (CA < CB) {
+    return -1;
+  } else if (CA > CB) {
+    return 1;
+  } else {
+    return 0;
+  }
+}
+
+int Lexer::CompareCCCEntries(const void *A, const void *B) {
+  const uint32_t CA = reinterpret_cast<const CCCEntry*>(A)->Codepoint;
+  const uint32_t CB = reinterpret_cast<const CCCEntry*>(B)->Codepoint;
   if (CA < CB) {
     return -1;
   } else if (CA > CB) {
@@ -334,7 +367,7 @@ int32_t Lexer::ComposeChars(uint32_t a, uint32_t b) const {
   const CharComposition Key = {a, b, 0};
   const CharComposition *Value =
         reinterpret_cast<const CharComposition*>(bsearch(
-	    &Key, CharCompositions, NumCharCompositions,
+            &Key, CharCompositions, NumCharCompositions,
             sizeof(CharComposition), Lexer::CompareCharCompositions));
   if (Value != nullptr) {
     return Value->Composed;
