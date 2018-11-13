@@ -19,7 +19,7 @@
 #include <llvm/ADT/StringRef.h>
 #include <llvm/Support/MemoryBuffer.h>
 
-#include "firc/lexer.h"
+#include "firc/Lexer.h"
 
 int main(int argc, char** argv) {
   llvm::StringRef s("Foo Bar Baz");

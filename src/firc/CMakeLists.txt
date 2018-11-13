@@ -31,32 +31,32 @@ find_package(LLVM REQUIRED CONFIG)
 
 
 # ---------------------------------------------------------------------------
-# firc_lib
+# FircLib
 # ---------------------------------------------------------------------------
 
-add_library(firc_lib
-    lexer.cc lexer.h
-    generated_charsets.cc
+add_library(FircLib
+    Lexer.cc Lexer.h
+    GeneratedCharsets.cc
 )
 
-set_target_properties(firc_lib PROPERTIES
+set_target_properties(FircLib PROPERTIES
     CXX_STANDARD 17
     CXX_STANDARD_REQUIRED YES
     CXX_EXTENSIONS NO
 )
 
-target_compile_definitions(firc_lib
+target_compile_definitions(FircLib
     PRIVATE ${LLVM_DEFINITIONS})
 
-target_include_directories(firc_lib
+target_include_directories(FircLib
     PRIVATE ..
     PRIVATE ${LLVM_INCLUDE_DIRS}
 )
 
-target_link_directories(firc_lib
+target_link_directories(FircLib
     PRIVATE ${LLVM_LIBRARY_DIRS})
 
-target_link_libraries(firc_lib LLVMSupport)
+target_link_libraries(FircLib LLVMSupport)
 
 
 # ---------------------------------------------------------------------------
@@ -76,28 +76,28 @@ set_target_properties(firc PROPERTIES
 target_include_directories(firc
     PRIVATE .. ${LLVM_INCLUDE_DIRS})
 
-target_link_libraries(firc firc_lib)
+target_link_libraries(firc FircLib)
 
 
 # ---------------------------------------------------------------------------
-# firc_test
+# FircTest
 # ---------------------------------------------------------------------------
 
-add_executable(firc_test
-    lexer_test.cc
+add_executable(FircTest
+    LexerTest.cc
 )
 
-set_target_properties(firc_test PROPERTIES
+set_target_properties(FircTest PROPERTIES
     CXX_STANDARD 17
     CXX_STANDARD_REQUIRED YES
     CXX_EXTENSIONS NO
 )
 
-target_include_directories(firc_test
+target_include_directories(FircTest
     PRIVATE .. ${LLVM_INCLUDE_DIRS})
 
-target_link_libraries(firc_test firc_lib gtest gtest_main)
+target_link_libraries(FircTest FircLib gtest gtest_main)
 
 enable_testing()
 
-add_test(NAME firc_test COMMAND firc_test)
+add_test(NAME FircTest COMMAND FircTest)

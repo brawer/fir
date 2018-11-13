@@ -3,7 +3,7 @@
 #include <llvm/Support/Allocator.h>
 #include <llvm/Support/MemoryBuffer.h>
 
-#include "firc/lexer.h"
+#include "firc/Lexer.h"
 #include "gtest/gtest.h"
 
 namespace firc {
