@@ -40,6 +40,24 @@ std::string RunLexer(llvm::StringRef s) {
     case TOKEN_ASTERISK: result += "ASTERISK"; break;
     case TOKEN_SLASH: result += "SLASH"; break;
     case TOKEN_PERCENT: result += "PERCENT"; break;
+    case TOKEN_AND: result += "AND"; break;
+    case TOKEN_CLASS: result += "CLASS"; break;
+    case TOKEN_CONST: result += "CONST"; break;
+    case TOKEN_ELSE: result += "ELSE"; break;
+    case TOKEN_FOR: result += "FOR"; break;
+    case TOKEN_IF: result += "IF"; break;
+    case TOKEN_IMPORT: result += "IMPORT"; break;
+    case TOKEN_IN: result += "IN"; break;
+    case TOKEN_IS: result += "IS"; break;
+    case TOKEN_NIL: result += "NIL"; break;
+    case TOKEN_NOT: result += "NOT"; break;
+    case TOKEN_OR: result += "OR"; break;
+    case TOKEN_PROC: result += "PROC"; break;
+    case TOKEN_RETURN: result += "RETURN"; break;
+    case TOKEN_VAR: result += "VAR"; break;
+    case TOKEN_WHILE: result += "WHILE"; break;
+    case TOKEN_WITH: result += "WITH"; break;
+    case TOKEN_YIELD: result += "YIELD"; break;
     default: result += "???"; break;
     }
 
@@ -55,6 +73,27 @@ std::string RunLexer(llvm::StringRef s) {
 TEST(LexerTest, ShouldIgnoreByteOrderMark) {
   EXPECT_EQ(RunLexer("\xEF\xBB\xBF"), "");
   EXPECT_EQ(RunLexer("\xEF\xBB\xBF" "Foo\n"), u8"ID[Foo]|NEWLINE");
+}
+
+TEST(LexerTest, Keywords) {
+  EXPECT_EQ(RunLexer(u8"and"), u8"AND[and]");
+  EXPECT_EQ(RunLexer(u8"class"), u8"CLASS[class]");
+  EXPECT_EQ(RunLexer(u8"const"), u8"CONST[const]");
+  EXPECT_EQ(RunLexer(u8"else"), u8"ELSE[else]");
+  EXPECT_EQ(RunLexer(u8"for"), u8"FOR[for]");
+  EXPECT_EQ(RunLexer(u8"if"), u8"IF[if]");
+  EXPECT_EQ(RunLexer(u8"import"), u8"IMPORT[import]");
+  EXPECT_EQ(RunLexer(u8"in"), u8"IN[in]");
+  EXPECT_EQ(RunLexer(u8"is"), u8"IS[is]");
+  EXPECT_EQ(RunLexer(u8"nil"), u8"NIL[nil]");
+  EXPECT_EQ(RunLexer(u8"not"), u8"NOT[not]");
+  EXPECT_EQ(RunLexer(u8"or"), u8"OR[or]");
+  EXPECT_EQ(RunLexer(u8"proc"), u8"PROC[proc]");
+  EXPECT_EQ(RunLexer(u8"return"), u8"RETURN[return]");
+  EXPECT_EQ(RunLexer(u8"var"), u8"VAR[var]");
+  EXPECT_EQ(RunLexer(u8"while"), u8"WHILE[while]");
+  EXPECT_EQ(RunLexer(u8"with"), u8"WITH[with]");
+  EXPECT_EQ(RunLexer(u8"yield"), u8"YIELD[yield]");
 }
 
 TEST(LexerTest, Symbols) {

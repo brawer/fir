@@ -135,6 +135,7 @@ bool Lexer::Advance() {
   const char* CurStart = reinterpret_cast<const char*>(CurCharPos);
 
   if (isIdentifierStart(CurChar)) {
+    const char FirstChar = CurChar;
     bool Normalized = true;
     NextToken = TOKEN_IDENTIFIER;
     do {
@@ -149,6 +150,93 @@ bool Lexer::Advance() {
         NextToken = TOKEN_ERROR_MALFORMED_UNICODE;
         return CurToken > TOKEN_EOF;
       }
+    }
+    switch (FirstChar) {
+    case 'a':
+      if (NextTokenText == "and") {
+        NextToken = TOKEN_AND;
+      } else if (NextTokenText == "and") {
+        NextToken = TOKEN_AND;
+      }
+      break;
+
+    case 'c':
+      if (NextTokenText == "class") {
+        NextToken = TOKEN_CLASS;
+      } else if (NextTokenText == "const") {
+        NextToken = TOKEN_CONST;
+      }
+      break;
+
+    case 'e':
+      if (NextTokenText == "else") {
+        NextToken = TOKEN_ELSE;
+      }
+      break;
+
+    case 'f':
+      if (NextTokenText == "for") {
+        NextToken = TOKEN_FOR;
+      }
+      break;
+
+    case 'i':
+      if (NextTokenText == "if") {
+        NextToken = TOKEN_IF;
+      } else if (NextTokenText == "import") {
+        NextToken = TOKEN_IMPORT;
+      } else if (NextTokenText == "in") {
+        NextToken = TOKEN_IN;
+      } else if (NextTokenText == "is") {
+        NextToken = TOKEN_IS;
+      }
+      break;
+
+    case 'n':
+      if (NextTokenText == "nil") {
+        NextToken = TOKEN_NIL;
+      } else if (NextTokenText == "not") {
+        NextToken = TOKEN_NOT;
+      }
+      break;
+
+    case 'o':
+      if (NextTokenText == "or") {
+        NextToken = TOKEN_OR;
+      }
+      break;
+
+    case 'p':
+      if (NextTokenText == "proc") {
+        NextToken = TOKEN_PROC;
+      }
+      break;
+
+    case 'r':
+      if (NextTokenText == "return") {
+        NextToken = TOKEN_RETURN;
+      }
+      break;
+
+    case 'v':
+      if (NextTokenText == "var") {
+        NextToken = TOKEN_VAR;
+      }
+      break;
+
+    case 'w':
+      if (NextTokenText == "while") {
+        NextToken = TOKEN_WHILE;
+      } else if (NextTokenText == "with") {
+        NextToken = TOKEN_WITH;
+      }
+      break;
+
+    case 'y':
+      if (NextTokenText == "yield") {
+        NextToken = TOKEN_YIELD;
+      }
+      break;
     }
     return CurToken > TOKEN_EOF;
   }
@@ -258,7 +346,7 @@ bool Lexer::Decompose(const llvm::StringRef UTF8,
     const CharDecomposition Key = {c, 0, 0};
     const CharDecomposition *Value =
         reinterpret_cast<const CharDecomposition*>(bsearch(
-	    &Key, CharDecompositions, NumCharDecompositions,
+            &Key, CharDecompositions, NumCharDecompositions,
             sizeof(CharDecomposition), Lexer::CompareCharDecompositions));
     if (Value != nullptr) {
       if (Value->DecompositionLength == 1) {
@@ -280,7 +368,7 @@ bool Lexer::Decompose(const llvm::StringRef UTF8,
     if (LLVM_UNLIKELY(ccc != 0)) {
       size_t j = i + 1;
       while (j < Decomposed->size() &&
-	     (getCombiningCharClass((*Decomposed)[j]) != 0)) {
+             (getCombiningCharClass((*Decomposed)[j]) != 0)) {
         ++j;
       }
       if (LLVM_UNLIKELY(j - i > 1)) {
