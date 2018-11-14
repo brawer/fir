@@ -24,7 +24,6 @@
 #include <llvm/Support/UnicodeCharRanges.h>
 
 namespace llvm {
-class line_iterator;
 class MemoryBuffer;
 }  // namespace llvm
 
