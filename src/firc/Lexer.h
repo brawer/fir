@@ -35,7 +35,7 @@ enum TokenType {
   TOKEN_ERROR_INDENT_MISMATCH = -1,
   TOKEN_EOF = 0, TOKEN_NEWLINE = 1,
 
-  TOKEN_INDENT, TOKEN_UNINDENT, TOKEN_IDENTIFIER,
+  TOKEN_INDENT, TOKEN_UNINDENT, TOKEN_IDENTIFIER, TOKEN_INTEGER,
   TOKEN_LEFT_PARENTHESIS, TOKEN_RIGHT_PARENTHESIS,
   TOKEN_LEFT_BRACKET, TOKEN_RIGHT_BRACKET,
   TOKEN_COLON, TOKEN_SEMICOLON, TOKEN_COMMA, TOKEN_DOT, TOKEN_EQUAL,
@@ -69,6 +69,10 @@ private:
 
   static const llvm::sys::UnicodeCharSet
       IDStartChars, IDPartChars, WhitespaceChars, PossiblyNotNFKCChars;
+
+  bool isDigit(uint32_t c) const {
+    return c >= 0x30 && c <= 0x39;
+  }
 
   bool isLineSeparator(uint32_t CurChar, uint32_t NextChar) const {
     return (CurChar == 0x000A || CurChar == 0x000B || CurChar == 0x000C ||

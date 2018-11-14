@@ -135,6 +135,18 @@ bool Lexer::Advance() {
 
   const char* CurStart = reinterpret_cast<const char*>(CurCharPos);
 
+  if (isDigit(CurChar) ||
+      (CurChar == '-' && isDigit(NextChar)) ||
+      (CurChar == '+' && isDigit(NextChar))) {
+    do {
+      AdvanceChar();
+    } while (isDigit(CurChar));
+    const char* CurEnd = reinterpret_cast<const char*>(CurCharPos);
+    NextToken = TOKEN_INTEGER;
+    NextTokenText = llvm::StringRef(CurStart, CurEnd - CurStart);
+    return CurToken > TOKEN_EOF;
+  }
+
   if (isIdentifierStart(CurChar)) {
     const char FirstChar = CurChar;
     bool Normalized = true;

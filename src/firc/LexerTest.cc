@@ -26,6 +26,7 @@ std::string RunLexer(llvm::StringRef s) {
     case TOKEN_INDENT: result += "INDENT"; break;
     case TOKEN_UNINDENT: result += "UNINDENT"; break;
     case TOKEN_IDENTIFIER: result += "ID"; break;
+    case TOKEN_INTEGER: result += "INTEGER"; break;
     case TOKEN_LEFT_PARENTHESIS: result += "LEFT_PARENTHESIS"; break;
     case TOKEN_RIGHT_PARENTHESIS: result += "RIGHT_PARENTHESIS"; break;
     case TOKEN_LEFT_BRACKET: result += "LEFT_BRACKET"; break;
@@ -189,6 +190,12 @@ TEST(LexerTest, Indent_ShouldUnindentAtEndOfFile) {
             "INDENT|ID[B]|NEWLINE|"     //   B
             "INDENT|ID[C]|NEWLINE|"     //     C
             "UNINDENT|UNINDENT");       // <2 implicit unindents>
+}
+
+TEST(LexerTest, Integer) {
+  EXPECT_EQ(RunLexer("123"), "INTEGER[123]");
+  EXPECT_EQ(RunLexer("-123"), "INTEGER[-123]");
+  EXPECT_EQ(RunLexer("+123"), "INTEGER[+123]");
 }
 
 TEST(LexerTest, Whitespace) {
