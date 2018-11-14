@@ -132,7 +132,7 @@ private:
   }
 
   void AdvanceChar();
-  void SkipWhitespace();
+  void SkipWhitespace(bool AlsoSkipLineSeparators);
 
   llvm::StringRef ConvertToNFKC(const llvm::StringRef UTF8);
   bool Decompose(const llvm::StringRef UTF8,

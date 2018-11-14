@@ -100,7 +100,7 @@ bool Lexer::Advance() {
   }
 
   if (Column == 1) {
-    SkipWhitespace();
+    SkipWhitespace(/* also skip line separators? */ true);
     const uint32_t NumSpaces = Column - 1;
     const uint32_t IndentPos = Indents.empty() ? 0 : Indents.back();
     if (NumSpaces > IndentPos) {
@@ -125,6 +125,7 @@ bool Lexer::Advance() {
     }
   }
 
+  SkipWhitespace(/* also skip line separators? */ false);
   if (isLineSeparator(CurChar, NextChar)) {
     NextToken = TOKEN_NEWLINE;
     NextTokenText = llvm::StringRef();
@@ -272,8 +273,11 @@ bool Lexer::Advance() {
   return CurToken > TOKEN_EOF;
 }
 
-void Lexer::SkipWhitespace() {
+void Lexer::SkipWhitespace(bool AlsoSkipLineSeparators) {
   for (; CurChar != EndOfFile && isWhitespace(CurChar); AdvanceChar()) {
+    if (!AlsoSkipLineSeparators && isLineSeparator(CurChar, NextChar)) {
+      return;
+    }
   }
 }
 

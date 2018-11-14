@@ -191,4 +191,8 @@ TEST(LexerTest, Indent_ShouldUnindentAtEndOfFile) {
             "UNINDENT|UNINDENT");       // <2 implicit unindents>
 }
 
+TEST(LexerTest, Whitespace) {
+  EXPECT_EQ(RunLexer("if  foo : \n"), "IF[if]|ID[foo]|COLON[:]|NEWLINE");
+}
+
 }  // namespace firc
