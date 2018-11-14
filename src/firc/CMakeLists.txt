@@ -35,7 +35,7 @@ find_package(LLVM REQUIRED CONFIG)
 # ---------------------------------------------------------------------------
 
 add_library(FircLib
-    Lexer.cc Lexer.h
+    AST.cc AST.h Lexer.cc Lexer.h Parser.cc Parser.h
     GeneratedCharsets.cc
 )
 
@@ -84,7 +84,7 @@ target_link_libraries(firc FircLib)
 # ---------------------------------------------------------------------------
 
 add_executable(FircTest
-    LexerTest.cc
+    LexerTest.cc ParserTest.cc
 )
 
 set_target_properties(FircTest PROPERTIES

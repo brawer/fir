@@ -1,0 +1,131 @@
+// Copyright 2018 by Sascha Brawer <sascha@brawer.ch>
+// SPDX-License-Identifier: Apache-2.0
+//
+// Licensed under the Apache License, Version 2.0 (the “License”);
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an “AS IS” BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+#include <iostream>
+#include <memory>
+#include "firc/AST.h"
+#include "firc/Lexer.h"
+#include "firc/Parser.h"
+
+namespace firc {
+
+firc::FileAST* Parser::ParseFile(const llvm::MemoryBuffer* buf,
+                                 llvm::BumpPtrAllocator* allocator) {
+  firc::Lexer lexer(buf, allocator);
+  firc::Parser parser(&lexer);
+  parser.Parse();
+  return parser.FileAST.release();
+}
+
+Parser::Parser(firc::Lexer* Lexer)
+  : Lexer(Lexer), FileAST(new firc::FileAST()) {
+}
+
+Parser::~Parser() {
+}
+
+void Parser::Parse() {
+  while (Lexer->Advance()) {
+    if (Lexer->CurToken == TOKEN_PROC) {
+      std::unique_ptr<ProcedureAST> p(ParseProcedure());
+      if (p.get() != nullptr) {
+        FileAST->Procedures.push_back(p.release());
+      }
+      continue;
+    }
+  }
+}
+
+ProcedureAST* Parser::ParseProcedure() {
+  Lexer->Advance();
+  if (Lexer->CurToken != TOKEN_IDENTIFIER) {
+    ReportError("Expected identifier");
+    return nullptr;
+  }
+
+  std::unique_ptr<ProcedureAST> result(new ProcedureAST(Lexer->CurTokenText));
+
+  Lexer->Advance();
+  if (!ExpectSymbol(TOKEN_LEFT_PARENTHESIS)) {
+    return nullptr;
+  }
+
+  Lexer->Advance();
+  if (!ExpectSymbol(TOKEN_RIGHT_PARENTHESIS)) {
+    return nullptr;
+  }
+
+  Lexer->Advance();
+  if (!ExpectSymbol(TOKEN_COLON)) {
+    return nullptr;
+  }
+
+  Lexer->Advance();
+  if (!ExpectSymbol(TOKEN_NEWLINE)) {
+    return nullptr;
+  }
+
+  Lexer->Advance();
+  if (!ExpectSymbol(TOKEN_INDENT)) {
+    return nullptr;
+  }
+
+  Lexer->Advance();
+  if (!ExpectSymbol(TOKEN_RETURN)) {
+    return nullptr;
+  }
+
+  Lexer->Advance();
+  if (!ExpectSymbol(TOKEN_NEWLINE)) {
+    return nullptr;
+  }
+
+  Lexer->Advance();
+  if (!ExpectSymbol(TOKEN_UNINDENT)) {
+    return nullptr;
+  }
+
+  return result.release();
+}
+
+bool Parser::ExpectSymbol(TokenType Token) {
+  if (LLVM_UNLIKELY(Lexer->CurToken != Token)) {
+    std::string Err, Found;
+    switch (Token) {
+    case TOKEN_NEWLINE: Err = u8"Expected end of line"; break;
+    case TOKEN_INDENT: Err = u8"Expected indentation"; break;
+    case TOKEN_UNINDENT: Err = u8"Expected un-indentation"; break;
+    case TOKEN_COLON: Err = u8"Expected ‘:’"; break;
+    case TOKEN_LEFT_PARENTHESIS: Err = u8"Expected ‘(’"; break;
+    case TOKEN_RIGHT_PARENTHESIS: Err = u8"Expected ‘)’"; break;
+    default: Err = "Expected something different"; break;
+    }
+    switch (Lexer->CurToken) {
+    case TOKEN_NEWLINE: Found = "end of line"; break;
+    case TOKEN_INDENT: Found = "indentation"; break;
+    case TOKEN_UNINDENT: Found = "un-indentation"; break;
+    default: Found = u8"‘" + Lexer->CurTokenText.str() + u8"’";
+    }
+    ReportError(Err + u8", found " + Found);
+    return false;
+  }
+  return true;
+}
+
+void Parser::ReportError(const std::string& Error) {
+  std::cerr << Error << std::endl;
+}
+
+}  // namespace firc
