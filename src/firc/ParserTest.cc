@@ -21,8 +21,10 @@ std::string Parse(llvm::StringRef s) {
 }
 
 TEST(ParserTest, Proc) {
-  EXPECT_EQ(Parse("proc Foo():\n return\n"),
-            "proc Foo():\n    return\n");
+  EXPECT_EQ(Parse("proc Foo():\n return\n"), "proc Foo():\n    return\n");
+  EXPECT_EQ(Parse("proc F(x):\n return\n"), "proc F(x):\n    return\n");
+  EXPECT_EQ(Parse("proc F(x,y ,z):\n return\n"),
+            "proc F(x, y, z):\n    return\n");
 }
 
 }  // namespace firc

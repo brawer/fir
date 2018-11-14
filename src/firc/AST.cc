@@ -24,6 +24,7 @@ FileAST::FileAST() {
 }
 
 FileAST::~FileAST() {
+  for (auto p : Procedures) delete p;
 }
 
 void FileAST::Write(std::ostream* Out) const {
@@ -40,10 +41,26 @@ ProcedureAST::ProcedureAST(llvm::StringRef name)
 }
 
 ProcedureAST::~ProcedureAST() {
+  for (auto p : Params) delete p;
 }
 
 void ProcedureAST::Write(std::ostream* Out) const {
-  *Out << "proc " << Name.str() << "():\n    return\n";
+  *Out << "proc " << Name.str() << "(";
+  bool First = true;
+  for (auto param : Params) {
+    if (!First) *Out << ", ";
+    First = false;
+    *Out << param->Name.str();
+  }
+  *Out << "):\n    return\n";
+}
+
+ProcedureParamAST::ProcedureParamAST(llvm::StringRef Name)
+  : Name(Name) {
+}
+
+void ProcedureParamAST::Write(std::ostream* Out) const {
+  *Out << Name.str();  // TODO: Add colon and Type if present
 }
 
 }  // namespace firc

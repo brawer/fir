@@ -16,6 +16,7 @@
 #ifndef FIRC_AST_H_
 #define FIRC_AST_H_
 
+#include <memory>
 #include <sstream>
 #include <llvm/ADT/StringRef.h>
 #include <llvm/Support/Allocator.h>
@@ -23,6 +24,7 @@
 namespace firc {
 
 class ProcedureAST;
+class ProcedureParamAST;
 
 class FileAST {
 public:
@@ -40,6 +42,15 @@ public:
   void Write(std::ostream* Out) const;
 
   llvm::StringRef Name;
+  llvm::SmallVector<ProcedureParamAST*, 8> Params;
+};
+
+class ProcedureParamAST {
+public:
+  ProcedureParamAST(llvm::StringRef name);
+  void Write(std::ostream* Out) const;
+  llvm::StringRef Name;
+  // TODO: Type
 };
 
 };  // namespace firc

@@ -49,9 +49,9 @@ void Parser::Parse() {
 }
 
 ProcedureAST* Parser::ParseProcedure() {
+  assert(Lexer->CurToken == TOKEN_PROC);
   Lexer->Advance();
-  if (Lexer->CurToken != TOKEN_IDENTIFIER) {
-    ReportError("Expected identifier");
+  if (!ExpectSymbol(TOKEN_IDENTIFIER)) {
     return nullptr;
   }
 
@@ -63,6 +63,12 @@ ProcedureAST* Parser::ParseProcedure() {
   }
 
   Lexer->Advance();
+  if (Lexer->CurToken != TOKEN_RIGHT_PARENTHESIS) {
+    if (!ParseProcedureParams(result.get())) {
+      return nullptr;
+    }
+  }
+
   if (!ExpectSymbol(TOKEN_RIGHT_PARENTHESIS)) {
     return nullptr;
   }
@@ -100,6 +106,32 @@ ProcedureAST* Parser::ParseProcedure() {
   return result.release();
 }
 
+bool Parser::ParseProcedureParams(ProcedureAST* proc) {
+  llvm::SmallVector<llvm::StringRef, 4> ParamNames;
+  if (!ExpectSymbol(TOKEN_IDENTIFIER)) {
+    return false;
+  }
+  ParamNames.push_back(Lexer->CurTokenText);
+
+  Lexer->Advance();
+  while (Lexer->CurToken == TOKEN_COMMA) {
+    Lexer->Advance();
+    if (!ExpectSymbol(TOKEN_IDENTIFIER)) {
+      return false;
+    }
+    ParamNames.push_back(Lexer->CurTokenText);
+    Lexer->Advance();
+  }
+
+  // TODO: Parse type declaration if present.
+
+  for (auto name : ParamNames) {
+    proc->Params.push_back(new ProcedureParamAST(name));
+  }
+
+  return true;
+}
+
 bool Parser::ExpectSymbol(TokenType Token) {
   if (LLVM_UNLIKELY(Lexer->CurToken != Token)) {
     std::string Err, Found;
@@ -107,6 +139,7 @@ bool Parser::ExpectSymbol(TokenType Token) {
     case TOKEN_NEWLINE: Err = u8"Expected end of line"; break;
     case TOKEN_INDENT: Err = u8"Expected indentation"; break;
     case TOKEN_UNINDENT: Err = u8"Expected un-indentation"; break;
+    case TOKEN_IDENTIFIER: Err = u8"Expected an identifier"; break;
     case TOKEN_COLON: Err = u8"Expected ‘:’"; break;
     case TOKEN_LEFT_PARENTHESIS: Err = u8"Expected ‘(’"; break;
     case TOKEN_RIGHT_PARENTHESIS: Err = u8"Expected ‘)’"; break;

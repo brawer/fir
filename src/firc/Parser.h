@@ -40,6 +40,7 @@ private:
 
   void Parse();
   ProcedureAST* ParseProcedure();
+  bool ParseProcedureParams(ProcedureAST* proc);
 
   bool ExpectSymbol(TokenType Token);
   void ReportError(const std::string& Error);
