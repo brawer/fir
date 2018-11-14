@@ -17,34 +17,30 @@ std::string RunLexer(llvm::StringRef s) {
     if (!result.empty()) {
       result += '|';
     }
+
     switch (lexer.CurToken) {
-    case TOKEN_ERROR_INDENT_MISMATCH:
-      result += "ERROR_INDENT_MISMATCH";
-      break;
-
-    case TOKEN_EOF:
-      result += "EOF";
-      break;
-
-    case TOKEN_NEWLINE:
-      result += "NEWLINE";
-      break;
-
-    case TOKEN_INDENT:
-      result += "INDENT";
-      break;
-
-    case TOKEN_UNINDENT:
-      result += "UNINDENT";
-      break;
-
-    case TOKEN_IDENTIFIER:
-      result += "ID";
-      break;
-
-    default:
-      result += "???";
-      break;
+    case TOKEN_ERROR_UNEXPECTED_CHAR: result += "ERROR_UNEXPECTED_CHAR"; break;
+    case TOKEN_ERROR_INDENT_MISMATCH: result += "ERROR_INDENT_MISMATCH"; break;
+    case TOKEN_EOF: result += "EOF"; break;
+    case TOKEN_NEWLINE: result += "NEWLINE"; break;
+    case TOKEN_INDENT: result += "INDENT"; break;
+    case TOKEN_UNINDENT: result += "UNINDENT"; break;
+    case TOKEN_IDENTIFIER: result += "ID"; break;
+    case TOKEN_LEFT_PARENTHESIS: result += "LEFT_PARENTHESIS"; break;
+    case TOKEN_RIGHT_PARENTHESIS: result += "RIGHT_PARENTHESIS"; break;
+    case TOKEN_LEFT_BRACKET: result += "LEFT_BRACKET"; break;
+    case TOKEN_RIGHT_BRACKET: result += "RIGHT_BRACKET"; break;
+    case TOKEN_COLON: result += "COLON"; break;
+    case TOKEN_SEMICOLON: result += "SEMICOLON"; break;
+    case TOKEN_COMMA: result += "COMMA"; break;
+    case TOKEN_DOT: result += "DOT"; break;
+    case TOKEN_EQUAL: result += "EQUAL"; break;
+    case TOKEN_PLUS: result += "PLUS"; break;
+    case TOKEN_MINUS: result += "MINUS"; break;
+    case TOKEN_ASTERISK: result += "ASTERISK"; break;
+    case TOKEN_SLASH: result += "SLASH"; break;
+    case TOKEN_PERCENT: result += "PERCENT"; break;
+    default: result += "???"; break;
     }
 
     if (!lexer.CurTokenText.empty()) {
@@ -59,6 +55,28 @@ std::string RunLexer(llvm::StringRef s) {
 TEST(LexerTest, ShouldIgnoreByteOrderMark) {
   EXPECT_EQ(RunLexer("\xEF\xBB\xBF"), "");
   EXPECT_EQ(RunLexer("\xEF\xBB\xBF" "Foo\n"), u8"ID[Foo]|NEWLINE");
+}
+
+TEST(LexerTest, Symbols) {
+  EXPECT_EQ(RunLexer(u8"("), u8"LEFT_PARENTHESIS[(]");
+  EXPECT_EQ(RunLexer(u8")"), u8"RIGHT_PARENTHESIS[)]");
+  EXPECT_EQ(RunLexer(u8"["), u8"LEFT_BRACKET[[]");
+  EXPECT_EQ(RunLexer(u8"]"), u8"RIGHT_BRACKET[]]");
+  EXPECT_EQ(RunLexer(u8":"), u8"COLON[:]");
+  EXPECT_EQ(RunLexer(u8";"), u8"SEMICOLON[;]");
+  EXPECT_EQ(RunLexer(u8","), u8"COMMA[,]");
+  EXPECT_EQ(RunLexer(u8"."), u8"DOT[.]");
+  EXPECT_EQ(RunLexer(u8"="), u8"EQUAL[=]");
+  EXPECT_EQ(RunLexer(u8"+"), u8"PLUS[+]");
+  EXPECT_EQ(RunLexer(u8"-"), u8"MINUS[-]");
+  EXPECT_EQ(RunLexer(u8"*"), u8"ASTERISK[*]");
+  EXPECT_EQ(RunLexer(u8"/"), u8"SLASH[/]");
+  EXPECT_EQ(RunLexer(u8"%"), u8"PERCENT[%]");
+}
+
+TEST(LexerTest, UnexpectedChar) {
+  EXPECT_EQ(RunLexer(u8"§"), u8"ERROR_UNEXPECTED_CHAR[§]");
+  EXPECT_EQ(RunLexer(u8"₩"), u8"ERROR_UNEXPECTED_CHAR[₩]");
 }
 
 TEST(LexerTest, Identifier) {

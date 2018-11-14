@@ -132,16 +132,17 @@ bool Lexer::Advance() {
     return CurToken > TOKEN_EOF;
   }
 
+  const char* CurStart = reinterpret_cast<const char*>(CurCharPos);
+
   if (isIdentifierStart(CurChar)) {
-    const char* IDStart = reinterpret_cast<const char*>(CurCharPos);
     bool Normalized = true;
     NextToken = TOKEN_IDENTIFIER;
     do {
       Normalized = Normalized && isCertainlyNFKC(CurChar);
       AdvanceChar();
     } while (isIdentifierPart(CurChar));
-    const char* IDEnd = reinterpret_cast<const char*>(CurCharPos);
-    NextTokenText = llvm::StringRef(IDStart, IDEnd - IDStart);
+    const char* CurEnd = reinterpret_cast<const char*>(CurCharPos);
+    NextTokenText = llvm::StringRef(CurStart, CurEnd - CurStart);
     if (!Normalized) {
       NextTokenText = ConvertToNFKC(NextTokenText);
       if (LLVM_UNLIKELY(NextTokenText.empty())) {
@@ -152,8 +153,34 @@ bool Lexer::Advance() {
     return CurToken > TOKEN_EOF;
   }
 
-  NextToken = TOKEN_EOF;
-  NextTokenText = llvm::StringRef();
+  NextToken = TOKEN_ERROR_UNEXPECTED_CHAR;
+  switch (CurChar) {
+  case '(': NextToken = TOKEN_LEFT_PARENTHESIS; break;
+  case ')': NextToken = TOKEN_RIGHT_PARENTHESIS; break;
+  case '[': NextToken = TOKEN_LEFT_BRACKET; break;
+  case ']': NextToken = TOKEN_RIGHT_BRACKET; break;
+  case ':': NextToken = TOKEN_COLON; break;
+  case ';': NextToken = TOKEN_SEMICOLON; break;
+  case ',': NextToken = TOKEN_COMMA; break;
+  case '.': NextToken = TOKEN_DOT; break;
+  case '=': NextToken = TOKEN_EQUAL; break;
+  case '+': NextToken = TOKEN_PLUS; break;
+  case '-': NextToken = TOKEN_MINUS; break;
+  case '*': NextToken = TOKEN_ASTERISK; break;
+  case '/': NextToken = TOKEN_SLASH; break;
+  case '%': NextToken = TOKEN_PERCENT; break;
+  }
+  if (NextToken != TOKEN_ERROR_UNEXPECTED_CHAR) {
+    AdvanceChar();
+    const char* CurEnd = reinterpret_cast<const char*>(CurCharPos);
+    NextTokenText = llvm::StringRef(CurStart, CurEnd - CurStart);
+    return CurToken > TOKEN_EOF;
+  }
+
+  NextToken = TOKEN_ERROR_UNEXPECTED_CHAR;
+  AdvanceChar();
+  const char* CurEnd = reinterpret_cast<const char*>(CurCharPos);
+  NextTokenText = llvm::StringRef(CurStart, CurEnd - CurStart);
   return CurToken > TOKEN_EOF;
 }
 
