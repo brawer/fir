@@ -44,11 +44,30 @@ void TypeRef::write(std::ostream* Out) const {
   }
 }
 
+
+void Statement::startLine(int Indent, std::ostream* Out) const {
+  for (int i = 0; i < Indent; ++i) {
+    *Out << "    ";
+  }
+}
+
+void Statement::endLine(std::ostream* Out) const {
+  if (!Comment.empty()) {
+    *Out << "  # " << Comment.str();
+  }
+  *Out << '\n';
+}
+
+void ReturnStatement::write(int Indent, std::ostream* Out) const {
+  startLine(Indent, Out);
+  *Out << "return\n";
+}
+
 FileAST::FileAST() {
 }
 
 FileAST::~FileAST() {
-  for (auto p : Procedures) delete p;
+  for (auto P : Procedures) delete P;
 }
 
 void FileAST::write(std::ostream* Out) const {
@@ -65,7 +84,8 @@ ProcedureAST::ProcedureAST(llvm::StringRef name)
 }
 
 ProcedureAST::~ProcedureAST() {
-  for (auto p : Params) delete p;
+  for (auto P : Params) delete P;
+  for (auto S : Body) delete S;
 }
 
 void ProcedureAST::write(std::ostream* Out) const {
@@ -98,7 +118,10 @@ void ProcedureAST::write(std::ostream* Out) const {
       *Out << NamePart.str();
     }
   }
-  *Out << "\n    return\n";
+  *Out << "\n";
+  for (auto Statement : Body) {
+    Statement->write(/* Indent */ 1, Out);
+  }
 }
 
 ProcedureParamAST::ProcedureParamAST(llvm::StringRef Name, TypeRef Type)

@@ -34,6 +34,21 @@ public:
   llvm::SmallVector<llvm::StringRef, 4> QualifiedName;
 };
 
+class Statement {
+public:
+  virtual void write(int Indent, std::ostream* Out) const = 0;
+  llvm::StringRef Comment;
+
+protected:
+  void startLine(int Indent, std::ostream* Out) const;
+  void endLine(std::ostream* Out) const;
+};
+
+class ReturnStatement : public Statement {
+public:
+  virtual void write(int Indent, std::ostream* Out) const;
+};
+
 class FileAST {
 public:
   FileAST();
@@ -51,6 +66,7 @@ public:
 
   llvm::StringRef Name;
   llvm::SmallVector<ProcedureParamAST*, 8> Params;
+  llvm::SmallVector<Statement*, 8> Body;
   TypeRef ResultType;
 };
 

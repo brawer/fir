@@ -123,9 +123,11 @@ ProcedureAST* Parser::ParseProcedure() {
   }
 
   Lexer->Advance();
-  if (!ExpectSymbol(TOKEN_NEWLINE)) {
+  if (!ExpectSymbol(TOKEN_NEWLINE)) {  // TODO: TOKEN_COMMENT
     return nullptr;
   }
+
+  result->Body.push_back(new ReturnStatement());
 
   Lexer->Advance();
   if (!ExpectSymbol(TOKEN_UNINDENT)) {
