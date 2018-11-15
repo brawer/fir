@@ -36,6 +36,7 @@ public:
 
 class Statement {
 public:
+  virtual ~Statement();
   virtual void write(int Indent, std::ostream* Out) const = 0;
   llvm::StringRef Comment;
 

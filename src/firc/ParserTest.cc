@@ -23,6 +23,8 @@ std::string Parse(llvm::StringRef s) {
 TEST(ParserTest, Proc) {
   EXPECT_EQ(Parse(u8"proc Foo():\n return\n"), u8"proc Foo():\n    return\n");
   EXPECT_EQ(Parse(u8"proc F(x):\n return\n"), u8"proc F(x):\n    return\n");
+  EXPECT_EQ(Parse(u8"proc Foo():\n return\n return\n"),
+            u8"proc Foo():\n    return\n    return\n");
   EXPECT_EQ(Parse(u8"proc F(x,y ,z):\n return\n"),
             u8"proc F(x, y, z):\n    return\n");
   EXPECT_EQ(Parse(u8"proc Foo(): bar . Baz . Qux\n return\n"),
@@ -37,6 +39,10 @@ TEST(ParserTest, Proc) {
             u8"proc Foo(a: bar.Baz; b, c; d: bar.Qux):\n    return\n");
   EXPECT_EQ(Parse(u8"proc Foo(a: A; aa1: A.A; aa2: A.A; b: B):\n return\n"),
             u8"proc Foo(a: A; aa1, aa2: A.A; b: B):\n    return\n");
+}
+
+TEST(ParserTest, ReturnStatement) {
+  EXPECT_EQ(Parse(u8"proc P():\n return\n"), u8"proc P():\n    return\n");
 }
 
 }  // namespace firc

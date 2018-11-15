@@ -44,6 +44,8 @@ void TypeRef::write(std::ostream* Out) const {
   }
 }
 
+Statement::~Statement() {
+}
 
 void Statement::startLine(int Indent, std::ostream* Out) const {
   for (int i = 0; i < Indent; ++i) {

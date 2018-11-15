@@ -18,6 +18,7 @@
 
 #include <memory>
 #include <llvm/Support/Allocator.h>
+#include "firc/AST.h"
 #include "firc/Lexer.h"
 
 namespace llvm {
@@ -25,8 +26,6 @@ class MemoryBuffer;
 }  // namespace llvm
 
 namespace firc {
-
-class FileAST;
 
 class Parser {
 public:
@@ -42,6 +41,9 @@ private:
   bool ParseTypeRef(TypeRef* T);
   ProcedureAST* ParseProcedure();
   bool ParseProcedureParams(ProcedureAST* P);
+
+  Statement* ParseStatement();
+  ReturnStatement* ParseReturnStatement();
 
   bool ExpectSymbol(TokenType Token);
   void ReportError(const std::string& Error);

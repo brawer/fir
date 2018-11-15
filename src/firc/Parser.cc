@@ -118,18 +118,13 @@ ProcedureAST* Parser::ParseProcedure() {
   }
 
   Lexer->Advance();
-  if (!ExpectSymbol(TOKEN_RETURN)) {
-    return nullptr;
+  while (Lexer->CurToken != TOKEN_UNINDENT) {
+    Statement* S = ParseStatement();
+    if (S != nullptr) {
+      result->Body.push_back(S);
+    }
   }
 
-  Lexer->Advance();
-  if (!ExpectSymbol(TOKEN_NEWLINE)) {  // TODO: TOKEN_COMMENT
-    return nullptr;
-  }
-
-  result->Body.push_back(new ReturnStatement());
-
-  Lexer->Advance();
   if (!ExpectSymbol(TOKEN_UNINDENT)) {
     return nullptr;
   }
@@ -167,6 +162,31 @@ bool Parser::ParseProcedureParams(ProcedureAST* proc) {
   }
 
   return true;
+}
+
+Statement* Parser::ParseStatement() {
+  std::unique_ptr<Statement> Result;
+  if (Lexer->CurToken == TOKEN_RETURN) {
+    Result.reset(ParseReturnStatement());
+  } else {
+    ReportError("Expected a statement");
+    while (Lexer->CurToken != TOKEN_NEWLINE) {
+      Lexer->Advance();
+    }
+    Lexer->Advance();
+    return nullptr;
+  }
+  Lexer->Advance();
+  return Result.release();
+}
+
+ReturnStatement* Parser::ParseReturnStatement() {
+  if (!ExpectSymbol(TOKEN_RETURN)) {
+    return nullptr;
+  }
+
+  Lexer->Advance();
+  return new ReturnStatement();
 }
 
 bool Parser::ExpectSymbol(TokenType Token) {
