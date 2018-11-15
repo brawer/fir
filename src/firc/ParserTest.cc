@@ -41,6 +41,10 @@ TEST(ParserTest, Proc) {
             u8"proc Foo(a: A; aa1, aa2: A.A; b: B):\n    return\n");
 }
 
+TEST(ParserTest, EmptyStatement) {
+  EXPECT_EQ(Parse(u8"proc P():\n \n return\n"), u8"proc P():\n    return\n");
+}
+
 TEST(ParserTest, ReturnStatement) {
   EXPECT_EQ(Parse(u8"proc P():\n return\n"), u8"proc P():\n    return\n");
 }

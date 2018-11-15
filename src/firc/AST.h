@@ -45,6 +45,11 @@ protected:
   void endLine(std::ostream* Out) const;
 };
 
+class EmptyStatement : public Statement {
+public:
+  virtual void write(int Indent, std::ostream* Out) const;
+};
+
 class ReturnStatement : public Statement {
 public:
   virtual void write(int Indent, std::ostream* Out) const;

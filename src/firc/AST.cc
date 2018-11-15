@@ -60,6 +60,14 @@ void Statement::endLine(std::ostream* Out) const {
   *Out << '\n';
 }
 
+void EmptyStatement::write(int Indent, std::ostream* Out) const {
+  if (!Comment.empty()) {
+    startLine(Indent, Out);
+    *Out << "# " << Comment.str();
+  }
+  *Out << '\n';
+}
+
 void ReturnStatement::write(int Indent, std::ostream* Out) const {
   startLine(Indent, Out);
   *Out << "return";
