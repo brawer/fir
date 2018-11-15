@@ -48,6 +48,23 @@ void Parser::Parse() {
   }
 }
 
+bool Parser::ParseTypeRef(TypeRef* T) {
+  if (!ExpectSymbol(TOKEN_IDENTIFIER)) {
+    return false;
+  }
+  T->QualifiedName.push_back(Lexer->CurTokenText);
+  Lexer->Advance();
+  while (Lexer->CurToken == TOKEN_DOT) {
+    Lexer->Advance();
+    if (!ExpectSymbol(TOKEN_IDENTIFIER)) {
+      return false;
+    }
+    T->QualifiedName.push_back(Lexer->CurTokenText);
+    Lexer->Advance();
+  }
+  return true;
+}
+
 ProcedureAST* Parser::ParseProcedure() {
   assert(Lexer->CurToken == TOKEN_PROC);
   Lexer->Advance();
@@ -67,6 +84,12 @@ ProcedureAST* Parser::ParseProcedure() {
     if (!ParseProcedureParams(result.get())) {
       return nullptr;
     }
+    while (Lexer->CurToken == TOKEN_SEMICOLON) {
+      Lexer->Advance();
+      if (!ParseProcedureParams(result.get())) {
+        return nullptr;
+      }
+    }
   }
 
   if (!ExpectSymbol(TOKEN_RIGHT_PARENTHESIS)) {
@@ -79,6 +102,12 @@ ProcedureAST* Parser::ParseProcedure() {
   }
 
   Lexer->Advance();
+  if (Lexer->CurToken != TOKEN_NEWLINE) {  // TODO: TOKEN_COMMENT
+    if (!ParseTypeRef(&result->ResultType)) {
+      return nullptr;
+    }
+  }
+
   if (!ExpectSymbol(TOKEN_NEWLINE)) {
     return nullptr;
   }
@@ -123,10 +152,16 @@ bool Parser::ParseProcedureParams(ProcedureAST* proc) {
     Lexer->Advance();
   }
 
-  // TODO: Parse type declaration if present.
+  TypeRef ParamType;
+  if (Lexer->CurToken == TOKEN_COLON) {
+    Lexer->Advance();
+    if (!ParseTypeRef(&ParamType)) {
+      return false;
+    }
+  }
 
-  for (auto name : ParamNames) {
-    proc->Params.push_back(new ProcedureParamAST(name));
+  for (auto Name : ParamNames) {
+    proc->Params.push_back(new ProcedureParamAST(Name, ParamType));
   }
 
   return true;

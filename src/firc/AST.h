@@ -26,11 +26,19 @@ namespace firc {
 class ProcedureAST;
 class ProcedureParamAST;
 
+class TypeRef {
+public:
+  void write(std::ostream* Out) const;
+  bool isSpecified() const { return !QualifiedName.empty(); }
+  bool equals(const TypeRef& Other) const;
+  llvm::SmallVector<llvm::StringRef, 4> QualifiedName;
+};
+
 class FileAST {
 public:
   FileAST();
   ~FileAST();
-  void Write(std::ostream* Out) const;
+  void write(std::ostream* Out) const;
 
   llvm::SmallVector<ProcedureAST*, 32> Procedures;
 };
@@ -39,18 +47,20 @@ class ProcedureAST {
 public:
   ProcedureAST(llvm::StringRef name);
   ~ProcedureAST();
-  void Write(std::ostream* Out) const;
+  void write(std::ostream* Out) const;
 
   llvm::StringRef Name;
   llvm::SmallVector<ProcedureParamAST*, 8> Params;
+  TypeRef ResultType;
 };
 
 class ProcedureParamAST {
 public:
-  ProcedureParamAST(llvm::StringRef name);
-  void Write(std::ostream* Out) const;
+  ProcedureParamAST(llvm::StringRef Name, TypeRef Type);
+  void write(std::ostream* Out) const;
+
   llvm::StringRef Name;
-  // TODO: Type
+  firc::TypeRef Type;
 };
 
 };  // namespace firc

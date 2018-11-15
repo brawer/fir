@@ -39,8 +39,9 @@ private:
   ~Parser();
 
   void Parse();
+  bool ParseTypeRef(TypeRef* T);
   ProcedureAST* ParseProcedure();
-  bool ParseProcedureParams(ProcedureAST* proc);
+  bool ParseProcedureParams(ProcedureAST* P);
 
   bool ExpectSymbol(TokenType Token);
   void ReportError(const std::string& Error);

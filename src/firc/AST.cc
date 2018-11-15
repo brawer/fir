@@ -20,6 +20,30 @@
 
 namespace firc {
 
+bool TypeRef::equals(const TypeRef& Other) const {
+  if (this == &Other) {
+    return true;
+  }
+  if (this->QualifiedName.size() != Other.QualifiedName.size()) {
+    return false;
+  }
+  for (size_t i = 0; i < this->QualifiedName.size(); ++i) {
+    if (!this->QualifiedName[i].equals(Other.QualifiedName[i])) {
+      return false;
+    }
+  }
+  return true;
+}
+
+void TypeRef::write(std::ostream* Out) const {
+  bool First = true;
+  for (const llvm::StringRef& Name : QualifiedName) {
+    if (!First) *Out << '.';
+    First = false;
+    *Out << Name.str();
+  }
+}
+
 FileAST::FileAST() {
 }
 
@@ -27,12 +51,12 @@ FileAST::~FileAST() {
   for (auto p : Procedures) delete p;
 }
 
-void FileAST::Write(std::ostream* Out) const {
+void FileAST::write(std::ostream* Out) const {
   bool First = true;
   for (auto p : Procedures) {
     if (!First) *Out << '\n';
     First = false;
-    p->Write(Out);
+    p->write(Out);
   }
 }
 
@@ -44,22 +68,44 @@ ProcedureAST::~ProcedureAST() {
   for (auto p : Params) delete p;
 }
 
-void ProcedureAST::Write(std::ostream* Out) const {
+void ProcedureAST::write(std::ostream* Out) const {
   *Out << "proc " << Name.str() << "(";
-  bool First = true;
-  for (auto param : Params) {
-    if (!First) *Out << ", ";
-    First = false;
-    *Out << param->Name.str();
+  const size_t NumParams = Params.size();
+  char Separator = ' ';
+  for (int i = 0; i < NumParams; ++i) {
+    if (Separator != ' ') *Out << Separator << ' ';
+    const ProcedureParamAST* Param = Params[i];
+    const ProcedureParamAST* NextParam =
+        i + 1 < NumParams ? Params[i + 1] : nullptr;
+    *Out << Param->Name.str();
+    if (NextParam != nullptr && NextParam->Type.equals(Param->Type)) {
+      Separator = ',';
+    } else {
+      if (Param->Type.isSpecified()) {
+        *Out << ": ";
+        Param->Type.write(Out);
+      }
+      Separator = ';';
+    }
   }
-  *Out << "):\n    return\n";
+  *Out << "):";
+  if (ResultType.isSpecified()) {
+    *Out << ' ';
+    bool FirstPart = true;
+    for (auto NamePart : ResultType.QualifiedName) {
+      if (!FirstPart) *Out << '.';
+      FirstPart = false;
+      *Out << NamePart.str();
+    }
+  }
+  *Out << "\n    return\n";
 }
 
-ProcedureParamAST::ProcedureParamAST(llvm::StringRef Name)
-  : Name(Name) {
+ProcedureParamAST::ProcedureParamAST(llvm::StringRef Name, TypeRef Type)
+  : Name(Name), Type(Type) {
 }
 
-void ProcedureParamAST::Write(std::ostream* Out) const {
+void ProcedureParamAST::write(std::ostream* Out) const {
   *Out << Name.str();  // TODO: Add colon and Type if present
 }
 
