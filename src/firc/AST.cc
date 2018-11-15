@@ -20,7 +20,7 @@
 
 namespace firc {
 
-bool TypeRef::equals(const TypeRef& Other) const {
+bool TypeRef::equals(const TypeRef &Other) const {
   if (this == &Other) {
     return true;
   }
@@ -62,7 +62,31 @@ void Statement::endLine(std::ostream* Out) const {
 
 void ReturnStatement::write(int Indent, std::ostream* Out) const {
   startLine(Indent, Out);
-  *Out << "return\n";
+  *Out << "return";
+  endLine(Out);
+}
+
+void VarStatement::write(int Indent, std::ostream* Out) const {
+  startLine(Indent, Out);
+  *Out << "var ";
+  const size_t NumVars = Vars.size();
+  char Separator = ' ';
+  for (size_t i = 0; i < NumVars; ++i) {
+    if (Separator != ' ') *Out << Separator << ' ';
+    const VarDecl* CurVar = Vars[i];
+    const VarDecl* NextVar = i + 1 < NumVars ? Vars[i + 1] : nullptr;
+    *Out << CurVar->Name.str();
+    if (NextVar != nullptr && NextVar->Type.equals(CurVar->Type)) {
+      Separator = ',';
+    } else {
+      if (CurVar->Type.isSpecified()) {
+        *Out << ": ";
+        CurVar->Type.write(Out);
+      }
+      Separator = ';';
+    }
+  }
+  endLine(Out);
 }
 
 FileAST::FileAST() {
@@ -94,7 +118,7 @@ void ProcedureAST::write(std::ostream* Out) const {
   *Out << "proc " << Name.str() << "(";
   const size_t NumParams = Params.size();
   char Separator = ' ';
-  for (int i = 0; i < NumParams; ++i) {
+  for (size_t i = 0; i < NumParams; ++i) {
     if (Separator != ' ') *Out << Separator << ' ';
     const ProcedureParamAST* Param = Params[i];
     const ProcedureParamAST* NextParam =
@@ -126,12 +150,17 @@ void ProcedureAST::write(std::ostream* Out) const {
   }
 }
 
-ProcedureParamAST::ProcedureParamAST(llvm::StringRef Name, TypeRef Type)
+ProcedureParamAST::ProcedureParamAST(const llvm::StringRef &Name,
+                                     const TypeRef &Type)
   : Name(Name), Type(Type) {
 }
 
 void ProcedureParamAST::write(std::ostream* Out) const {
   *Out << Name.str();  // TODO: Add colon and Type if present
+}
+
+VarDecl::VarDecl(const llvm::StringRef &Name, const TypeRef &Type)
+  : Name(Name), Type(Type) {
 }
 
 }  // namespace firc

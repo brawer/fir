@@ -45,4 +45,15 @@ TEST(ParserTest, ReturnStatement) {
   EXPECT_EQ(Parse(u8"proc P():\n return\n"), u8"proc P():\n    return\n");
 }
 
+TEST(ParserTest, VarStatement) {
+  EXPECT_EQ(Parse(u8"proc P():\n var i\n"), u8"proc P():\n    var i\n");
+  EXPECT_EQ(Parse(u8"proc P():\n var i,j\n"), u8"proc P():\n    var i, j\n");
+  EXPECT_EQ(Parse(u8"proc P():\n var i,j:bar . Baz\n"),
+            u8"proc P():\n    var i, j: bar.Baz\n");
+  EXPECT_EQ(Parse(u8"proc P():\n var i,j:bar . Baz; cond: fir.Bool\n"),
+            u8"proc P():\n    var i, j: bar.Baz; cond: fir.Bool\n");
+  EXPECT_EQ(Parse(u8"proc P():\n var i,j:Int; k: Int; cond: Bool\n"),
+            u8"proc P():\n    var i, j, k: Int; cond: Bool\n");
+}
+
 }  // namespace firc

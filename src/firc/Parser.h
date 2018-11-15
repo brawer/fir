@@ -41,9 +41,11 @@ private:
   bool ParseTypeRef(TypeRef* T);
   ProcedureAST* ParseProcedure();
   bool ParseProcedureParams(ProcedureAST* P);
+  bool ParseVarDecls(VarDecls* Decls);
 
   Statement* ParseStatement();
   ReturnStatement* ParseReturnStatement();
+  VarStatement* ParseVarStatement();
 
   bool ExpectSymbol(TokenType Token);
   void ReportError(const std::string& Error);

@@ -50,6 +50,21 @@ public:
   virtual void write(int Indent, std::ostream* Out) const;
 };
 
+class VarDecl {
+public:
+  VarDecl(const llvm::StringRef &Name, const TypeRef &Type);
+  llvm::StringRef Name;
+  TypeRef Type;
+};
+
+typedef llvm::SmallVector<VarDecl*, 4> VarDecls;
+
+class VarStatement : public Statement {
+public:
+  virtual void write(int Indent, std::ostream* Out) const;
+  VarDecls Vars;
+};
+
 class FileAST {
 public:
   FileAST();
@@ -73,7 +88,7 @@ public:
 
 class ProcedureParamAST {
 public:
-  ProcedureParamAST(llvm::StringRef Name, TypeRef Type);
+  ProcedureParamAST(const llvm::StringRef& Name, const TypeRef& Type);
   void write(std::ostream* Out) const;
 
   llvm::StringRef Name;

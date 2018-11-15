@@ -166,9 +166,16 @@ bool Parser::ParseProcedureParams(ProcedureAST* proc) {
 
 Statement* Parser::ParseStatement() {
   std::unique_ptr<Statement> Result;
-  if (Lexer->CurToken == TOKEN_RETURN) {
+  switch (Lexer->CurToken) {
+  case TOKEN_RETURN:
     Result.reset(ParseReturnStatement());
-  } else {
+    break;
+
+  case TOKEN_VAR:
+    Result.reset(ParseVarStatement());
+    break;
+
+  default:
     ReportError("Expected a statement");
     while (Lexer->CurToken != TOKEN_NEWLINE) {
       Lexer->Advance();
@@ -187,6 +194,57 @@ ReturnStatement* Parser::ParseReturnStatement() {
 
   Lexer->Advance();
   return new ReturnStatement();
+}
+
+VarStatement* Parser::ParseVarStatement() {
+  if (!ExpectSymbol(TOKEN_VAR)) {
+    return nullptr;
+  }
+
+  Lexer->Advance();
+  std::unique_ptr<VarStatement> result(new VarStatement());
+  if (!ParseVarDecls(&result->Vars)) {
+    return nullptr;
+  }
+
+  while (Lexer->CurToken == TOKEN_SEMICOLON) {
+    Lexer->Advance();
+    if (!ParseVarDecls(&result->Vars)) {
+      return nullptr;
+    }
+  }
+
+  return result.release();
+}
+
+bool Parser::ParseVarDecls(VarDecls* Decls) {
+  llvm::SmallVector<llvm::StringRef, 4> VarNames;
+  if (!ExpectSymbol(TOKEN_IDENTIFIER)) {
+    return false;
+  }
+  VarNames.push_back(Lexer->CurTokenText);
+  Lexer->Advance();
+  while (Lexer->CurToken == TOKEN_COMMA) {
+    Lexer->Advance();
+    if (!ExpectSymbol(TOKEN_IDENTIFIER)) {
+      return false;
+    }
+    VarNames.push_back(Lexer->CurTokenText);
+    Lexer->Advance();
+  }
+
+  TypeRef VarType;
+  if (Lexer->CurToken == TOKEN_COLON) {
+    Lexer->Advance();
+    if (!ParseTypeRef(&VarType)) {
+      return false;
+    }
+  }
+
+  for (auto Name : VarNames) {
+    Decls->push_back(new VarDecl(Name, VarType));
+  }
+  return true;
 }
 
 bool Parser::ExpectSymbol(TokenType Token) {
