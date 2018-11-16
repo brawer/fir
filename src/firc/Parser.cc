@@ -122,10 +122,15 @@ ProcedureAST* Parser::parseProcedure() {
   }
 
   Lexer->Advance();
-  if (Lexer->CurToken != TOKEN_NEWLINE) {  // TODO: TOKEN_COMMENT
+  if (Lexer->CurToken != TOKEN_NEWLINE && Lexer->CurToken != TOKEN_COMMENT) {
     if (!parseTypeRef(&Result->ResultType)) {
       return nullptr;
     }
+  }
+
+  if (Lexer->CurToken == TOKEN_COMMENT) {
+    Result->Comment = Lexer->CurTokenText;
+    Lexer->Advance();
   }
 
   if (!expectSymbol(TOKEN_NEWLINE)) {

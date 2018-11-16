@@ -32,6 +32,8 @@ std::string parseExpr(llvm::StringRef s) {
 
 TEST(ParserTest, Proc) {
   EXPECT_EQ(parse("proc Foo():\n return\n"), "proc Foo():\n    return\n");
+  EXPECT_EQ(parse("proc F(x):#Comment\n return\n"),
+            "proc F(x):  # Comment\n    return\n");
   EXPECT_EQ(parse("proc F(x):\n return\n"), "proc F(x):\n    return\n");
   EXPECT_EQ(parse("proc Foo():\n return\n return\n"),
             "proc Foo():\n    return\n    return\n");
