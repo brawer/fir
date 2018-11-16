@@ -75,10 +75,11 @@ typedef llvm::SmallVector<llvm::StringRef, 4> Names;
 
 class VarDecl {
 public:
-  VarDecl(const Names &Names, const TypeRef &Type);
+  VarDecl(const Names &Names, const TypeRef &Type, Expr *Value);
   virtual void write(std::ostream *Out) const;
   Names VarNames;
   TypeRef Type;
+  std::unique_ptr<Expr> Value;
 };
 
 typedef llvm::SmallVector<VarDecl*, 4> VarDecls;

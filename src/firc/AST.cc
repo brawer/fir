@@ -148,8 +148,8 @@ void ProcedureAST::write(int Indent, std::ostream* Out) const {
   }
 }
 
-VarDecl::VarDecl(const Names &VarNames, const TypeRef &Type)
-  : VarNames(VarNames), Type(Type) {
+VarDecl::VarDecl(const Names &VarNames, const TypeRef &Type, Expr* Value)
+  : VarNames(VarNames), Type(Type), Value(Value) {
 }
 
 void VarDecl::write(std::ostream* Out) const {
@@ -161,6 +161,10 @@ void VarDecl::write(std::ostream* Out) const {
   if (Type.isSpecified()) {
     *Out << ": ";
     Type.write(Out);
+  }
+  if (Value) {
+    *Out << " = ";
+    Value->write(Out);
   }
 }
 

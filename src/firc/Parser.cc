@@ -279,7 +279,13 @@ VarDecl* Parser::parseVarDecl() {
     }
   }
 
-  return new VarDecl(VarNames, VarType);
+  std::unique_ptr<Expr> Value;
+  if (Lexer->CurToken == TOKEN_EQUAL) {
+    Lexer->Advance();
+    Value.reset(parseExpr());
+  }
+
+  return new VarDecl(VarNames, VarType, Value.release());
 }
 
 bool Parser::expectSymbol(TokenType Token) {

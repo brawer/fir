@@ -39,6 +39,8 @@ TEST(ParserTest, Procedure) {
             "proc Foo():\n    return\n    return\n");
   EXPECT_EQ(parse("proc F(x,y ,z):\n return\n"),
             "proc F(x, y, z):\n    return\n");
+  EXPECT_EQ(parse("proc F(x:Int=-1; y:Int=7):\n return\n"),
+            "proc F(x: Int = -1; y: Int = 7):\n    return\n");
   EXPECT_EQ(parse("proc Foo(): bar . Baz . Qux\n return\n"),
             "proc Foo(): bar.Baz.Qux\n    return\n");
   EXPECT_EQ(parse("proc Foo(x, y: bär.Baz ): bär.Qux\n return\n"),
@@ -82,6 +84,12 @@ TEST(ParserTest, ReturnStatement) {
 
 TEST(ParserTest, VarStatement) {
   EXPECT_EQ(parse("var i\n"), "var i\n");
+  EXPECT_EQ(parse("var i = 6\n"), "var i = 6\n");
+  EXPECT_EQ(parse("var i: Int = 6\n"), "var i: Int = 6\n");
+  EXPECT_EQ(parse("var i, j: Int = 6\n"), "var i, j: Int = 6\n");
+  EXPECT_EQ(parse("var i = 7; j = 6\n"), "var i = 7; j = 6\n");
+  EXPECT_EQ(parse("var i: Int = 7; j: Int = 6\n"),
+            "var i: Int = 7; j: Int = 6\n");
   EXPECT_EQ(parse("var i#Comment\n"), "var i  # Comment\n");
   EXPECT_EQ(parse("proc P():\n var i\n"), "proc P():\n    var i\n");
   EXPECT_EQ(parse("proc P():\n var i,j\n"), "proc P():\n    var i, j\n");
