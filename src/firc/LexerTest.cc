@@ -121,6 +121,9 @@ TEST(LexerTest, UnexpectedChar) {
 
 TEST(LexerTest, Identifier) {
   EXPECT_EQ(RunLexer("Foo"), "ID[Foo]");
+  EXPECT_EQ(RunLexer("_Foo"), "ID[_Foo]");
+  EXPECT_EQ(RunLexer("Foo_"), "ID[Foo_]");
+  EXPECT_EQ(RunLexer("__Foo__"), "ID[__Foo__]");
   EXPECT_EQ(RunLexer("Foo123"), "ID[Foo123]");
   EXPECT_EQ(RunLexer("識別子"), "ID[識別子]");
   EXPECT_EQ(RunLexer("شناختساز"), "ID[شناختساز]");
