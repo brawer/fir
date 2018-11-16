@@ -95,7 +95,7 @@ public:
   ~FileAST();
   void write(std::ostream* Out) const;
 
-  llvm::SmallVector<ProcedureAST*, 32> Procedures;
+  llvm::SmallVector<Statement*, 32> Body;
 };
 
 class ProcedureAST : public Statement {

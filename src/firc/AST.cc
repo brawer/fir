@@ -104,15 +104,14 @@ FileAST::FileAST() {
 }
 
 FileAST::~FileAST() {
-  for (auto P : Procedures) delete P;
+  for (auto Statement : Body) delete Statement;
 }
 
 void FileAST::write(std::ostream* Out) const {
   bool First = true;
-  for (auto p : Procedures) {
-    if (!First) *Out << '\n';
-    First = false;
-    p->write(/* Indent */ 0, Out);
+  for (auto Statement : Body) {
+    if (First) First = false; else *Out << '\n';
+    Statement->write(/* Indent */ 0, Out);
   }
 }
 
@@ -121,8 +120,8 @@ ProcedureAST::ProcedureAST(llvm::StringRef name)
 }
 
 ProcedureAST::~ProcedureAST() {
-  for (auto P : Params) delete P;
-  for (auto S : Body) delete S;
+  for (auto Param : Params) delete Param;
+  for (auto Statement : Body) delete Statement;
 }
 
 void ProcedureAST::write(int Indent, std::ostream* Out) const {

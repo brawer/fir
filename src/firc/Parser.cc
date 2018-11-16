@@ -41,7 +41,7 @@ void Parser::parse() {
     if (Lexer->CurToken == TOKEN_PROC) {
       std::unique_ptr<ProcedureAST> p(parseProcedure());
       if (p.get() != nullptr) {
-        FileAST->Procedures.push_back(p.release());
+        FileAST->Body.push_back(p.release());
       }
       continue;
     }
