@@ -72,6 +72,10 @@ TEST(ParserTest, ConstStatement) {
   EXPECT_EQ(parse("const i: Int = 6\n"), "const i: Int = 6\n");
   EXPECT_EQ(parse("const i: Int = 6; j: Int = 7\n"),
             "const i: Int = 6; j: Int = 7\n");
+
+  // TODO: Check reported errors.
+  EXPECT_EQ(parse("const i\n"), "const i\n");
+  EXPECT_EQ(parse("const i, j = 1\n"), "const i, j = 1\n");
 }
 
 TEST(ParserTest, EmptyStatement) {

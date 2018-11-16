@@ -44,6 +44,7 @@ private:
   Expr* parseExpr();
 
   ProcedureAST* parseProcedure();
+  VarDecl* parseConstDecl();
   VarDecl* parseVarDecl();
 
   Statement* parseStatement();

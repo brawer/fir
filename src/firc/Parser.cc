@@ -242,21 +242,19 @@ ConstStatement* Parser::parseConstStatement() {
   }
 
   Lexer->Advance();
-  std::unique_ptr<VarDecl> Decl(parseVarDecl());
+  std::unique_ptr<VarDecl> Decl(parseConstDecl());
   if (!Decl) {
     return nullptr;
   }
   Result->Consts.push_back(Decl.release());
-  // TODO: Make sure we have an initializer.
 
   while (Lexer->CurToken == TOKEN_SEMICOLON) {
     Lexer->Advance();
-    Decl.reset(parseVarDecl());
+    Decl.reset(parseConstDecl());
     if (!Decl) {
       return nullptr;
     }
     Result->Consts.push_back(Decl.release());
-    // TODO: Make sure we have an initializer.
   }
 
   return Result.release();
@@ -285,6 +283,18 @@ VarStatement* Parser::parseVarStatement() {
   }
 
   return Result.release();
+}
+
+VarDecl* Parser::parseConstDecl() {
+  VarDecl* Decl = parseVarDecl();
+  if (Decl->VarNames.size() > 1) {
+    reportError("Constants must be separated by ‘;’, not ‘,’");
+  }
+  if (Decl && !Decl->Value) {
+    reportError(std::string("Constant ”") + Decl->VarNames[0].str() +
+                "” must have a value");
+  }
+  return Decl;
 }
 
 VarDecl* Parser::parseVarDecl() {
