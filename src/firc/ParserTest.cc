@@ -14,7 +14,7 @@ std::string parse(llvm::StringRef s) {
   std::string result;
   llvm::BumpPtrAllocator allocator;
   std::unique_ptr<llvm::MemoryBuffer> buf(llvm::MemoryBuffer::getMemBuffer(s));
-  std::unique_ptr<FileAST> AST(Parser::ParseFile(buf.get(), &allocator));
+  std::unique_ptr<FileAST> AST(Parser::parseFile(buf.get(), &allocator));
   std::ostringstream Out;
   AST->write(&Out);
   return Out.str();

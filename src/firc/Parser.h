@@ -29,7 +29,7 @@ namespace firc {
 
 class Parser {
 public:
-  static firc::FileAST* ParseFile(
+  static firc::FileAST* parseFile(
       const llvm::MemoryBuffer* buf,
       llvm::BumpPtrAllocator* allocator);
 
@@ -37,22 +37,22 @@ private:
   Parser(firc::Lexer* lexer);
   ~Parser();
 
-  void Parse();
-  bool ParseTypeRef(TypeRef* T);
+  void parse();
+  bool parseTypeRef(TypeRef* T);
 
   bool isAtExprStart() const;
   Expr* parseExpr();
 
-  ProcedureAST* ParseProcedure();
-  bool ParseProcedureParams(ProcedureAST* P);
-  bool ParseVarDecls(VarDecls* Decls);
+  ProcedureAST* parseProcedure();
+  bool parseProcedureParams(ProcedureAST* P);
+  bool parseVarDecls(VarDecls* Decls);
 
-  Statement* ParseStatement();
-  ReturnStatement* ParseReturnStatement();
-  VarStatement* ParseVarStatement();
+  Statement* parseStatement();
+  ReturnStatement* parseReturnStatement();
+  VarStatement* parseVarStatement();
 
-  bool ExpectSymbol(TokenType Token);
-  void ReportError(const std::string& Error);
+  bool expectSymbol(TokenType Token);
+  void reportError(const std::string& Error);
 
   firc::Lexer* Lexer;
   std::unique_ptr<firc::FileAST> FileAST;

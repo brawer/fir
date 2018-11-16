@@ -21,11 +21,11 @@
 
 namespace firc {
 
-firc::FileAST* Parser::ParseFile(const llvm::MemoryBuffer* buf,
+firc::FileAST* Parser::parseFile(const llvm::MemoryBuffer* buf,
                                  llvm::BumpPtrAllocator* allocator) {
   firc::Lexer lexer(buf, allocator);
   firc::Parser parser(&lexer);
-  parser.Parse();
+  parser.parse();
   return parser.FileAST.release();
 }
 
@@ -36,10 +36,10 @@ Parser::Parser(firc::Lexer* Lexer)
 Parser::~Parser() {
 }
 
-void Parser::Parse() {
+void Parser::parse() {
   while (Lexer->Advance()) {
     if (Lexer->CurToken == TOKEN_PROC) {
-      std::unique_ptr<ProcedureAST> p(ParseProcedure());
+      std::unique_ptr<ProcedureAST> p(parseProcedure());
       if (p.get() != nullptr) {
         FileAST->Procedures.push_back(p.release());
       }
@@ -48,15 +48,15 @@ void Parser::Parse() {
   }
 }
 
-bool Parser::ParseTypeRef(TypeRef* T) {
-  if (!ExpectSymbol(TOKEN_IDENTIFIER)) {
+bool Parser::parseTypeRef(TypeRef* T) {
+  if (!expectSymbol(TOKEN_IDENTIFIER)) {
     return false;
   }
   T->QualifiedName.push_back(Lexer->CurTokenText);
   Lexer->Advance();
   while (Lexer->CurToken == TOKEN_DOT) {
     Lexer->Advance();
-    if (!ExpectSymbol(TOKEN_IDENTIFIER)) {
+    if (!expectSymbol(TOKEN_IDENTIFIER)) {
       return false;
     }
     T->QualifiedName.push_back(Lexer->CurTokenText);
@@ -79,82 +79,82 @@ Expr* Parser::parseExpr() {
   }
 
   default: {
-    ReportError("Expected expression");
+    reportError("Expected expression");
     return nullptr;
   }
   }
 }
 
-ProcedureAST* Parser::ParseProcedure() {
+ProcedureAST* Parser::parseProcedure() {
   assert(Lexer->CurToken == TOKEN_PROC);
   Lexer->Advance();
-  if (!ExpectSymbol(TOKEN_IDENTIFIER)) {
+  if (!expectSymbol(TOKEN_IDENTIFIER)) {
     return nullptr;
   }
 
   std::unique_ptr<ProcedureAST> result(new ProcedureAST(Lexer->CurTokenText));
 
   Lexer->Advance();
-  if (!ExpectSymbol(TOKEN_LEFT_PARENTHESIS)) {
+  if (!expectSymbol(TOKEN_LEFT_PARENTHESIS)) {
     return nullptr;
   }
 
   Lexer->Advance();
   if (Lexer->CurToken != TOKEN_RIGHT_PARENTHESIS) {
-    if (!ParseProcedureParams(result.get())) {
+    if (!parseProcedureParams(result.get())) {
       return nullptr;
     }
     while (Lexer->CurToken == TOKEN_SEMICOLON) {
       Lexer->Advance();
-      if (!ParseProcedureParams(result.get())) {
+      if (!parseProcedureParams(result.get())) {
         return nullptr;
       }
     }
   }
 
-  if (!ExpectSymbol(TOKEN_RIGHT_PARENTHESIS)) {
+  if (!expectSymbol(TOKEN_RIGHT_PARENTHESIS)) {
     return nullptr;
   }
 
   Lexer->Advance();
-  if (!ExpectSymbol(TOKEN_COLON)) {
+  if (!expectSymbol(TOKEN_COLON)) {
     return nullptr;
   }
 
   Lexer->Advance();
   if (Lexer->CurToken != TOKEN_NEWLINE) {  // TODO: TOKEN_COMMENT
-    if (!ParseTypeRef(&result->ResultType)) {
+    if (!parseTypeRef(&result->ResultType)) {
       return nullptr;
     }
   }
 
-  if (!ExpectSymbol(TOKEN_NEWLINE)) {
+  if (!expectSymbol(TOKEN_NEWLINE)) {
     return nullptr;
   }
 
   Lexer->Advance();
-  if (!ExpectSymbol(TOKEN_INDENT)) {
+  if (!expectSymbol(TOKEN_INDENT)) {
     return nullptr;
   }
 
   Lexer->Advance();
   while (Lexer->CurToken != TOKEN_UNINDENT) {
-    Statement* S = ParseStatement();
+    Statement* S = parseStatement();
     if (S != nullptr) {
       result->Body.push_back(S);
     }
   }
 
-  if (!ExpectSymbol(TOKEN_UNINDENT)) {
+  if (!expectSymbol(TOKEN_UNINDENT)) {
     return nullptr;
   }
 
   return result.release();
 }
 
-bool Parser::ParseProcedureParams(ProcedureAST* proc) {
+bool Parser::parseProcedureParams(ProcedureAST* proc) {
   llvm::SmallVector<llvm::StringRef, 4> ParamNames;
-  if (!ExpectSymbol(TOKEN_IDENTIFIER)) {
+  if (!expectSymbol(TOKEN_IDENTIFIER)) {
     return false;
   }
   ParamNames.push_back(Lexer->CurTokenText);
@@ -162,7 +162,7 @@ bool Parser::ParseProcedureParams(ProcedureAST* proc) {
   Lexer->Advance();
   while (Lexer->CurToken == TOKEN_COMMA) {
     Lexer->Advance();
-    if (!ExpectSymbol(TOKEN_IDENTIFIER)) {
+    if (!expectSymbol(TOKEN_IDENTIFIER)) {
       return false;
     }
     ParamNames.push_back(Lexer->CurTokenText);
@@ -172,7 +172,7 @@ bool Parser::ParseProcedureParams(ProcedureAST* proc) {
   TypeRef ParamType;
   if (Lexer->CurToken == TOKEN_COLON) {
     Lexer->Advance();
-    if (!ParseTypeRef(&ParamType)) {
+    if (!parseTypeRef(&ParamType)) {
       return false;
     }
   }
@@ -184,19 +184,19 @@ bool Parser::ParseProcedureParams(ProcedureAST* proc) {
   return true;
 }
 
-Statement* Parser::ParseStatement() {
+Statement* Parser::parseStatement() {
   std::unique_ptr<Statement> Result;
   switch (Lexer->CurToken) {
   case TOKEN_RETURN:
-    Result.reset(ParseReturnStatement());
+    Result.reset(parseReturnStatement());
     break;
 
   case TOKEN_VAR:
-    Result.reset(ParseVarStatement());
+    Result.reset(parseVarStatement());
     break;
 
   default:
-    ReportError("Expected a statement");
+    reportError("Expected a statement");
     while (Lexer->CurToken != TOKEN_NEWLINE) {
       Lexer->Advance();
     }
@@ -207,9 +207,9 @@ Statement* Parser::ParseStatement() {
   return Result.release();
 }
 
-ReturnStatement* Parser::ParseReturnStatement() {
+ReturnStatement* Parser::parseReturnStatement() {
   std::unique_ptr<ReturnStatement> Result(new ReturnStatement());
-  if (!ExpectSymbol(TOKEN_RETURN)) {
+  if (!expectSymbol(TOKEN_RETURN)) {
     return nullptr;
   }
 
@@ -221,20 +221,20 @@ ReturnStatement* Parser::ParseReturnStatement() {
   return Result.release();
 }
 
-VarStatement* Parser::ParseVarStatement() {
-  if (!ExpectSymbol(TOKEN_VAR)) {
+VarStatement* Parser::parseVarStatement() {
+  if (!expectSymbol(TOKEN_VAR)) {
     return nullptr;
   }
 
   Lexer->Advance();
   std::unique_ptr<VarStatement> result(new VarStatement());
-  if (!ParseVarDecls(&result->Vars)) {
+  if (!parseVarDecls(&result->Vars)) {
     return nullptr;
   }
 
   while (Lexer->CurToken == TOKEN_SEMICOLON) {
     Lexer->Advance();
-    if (!ParseVarDecls(&result->Vars)) {
+    if (!parseVarDecls(&result->Vars)) {
       return nullptr;
     }
   }
@@ -242,16 +242,16 @@ VarStatement* Parser::ParseVarStatement() {
   return result.release();
 }
 
-bool Parser::ParseVarDecls(VarDecls* Decls) {
+bool Parser::parseVarDecls(VarDecls* Decls) {
   llvm::SmallVector<llvm::StringRef, 4> VarNames;
-  if (!ExpectSymbol(TOKEN_IDENTIFIER)) {
+  if (!expectSymbol(TOKEN_IDENTIFIER)) {
     return false;
   }
   VarNames.push_back(Lexer->CurTokenText);
   Lexer->Advance();
   while (Lexer->CurToken == TOKEN_COMMA) {
     Lexer->Advance();
-    if (!ExpectSymbol(TOKEN_IDENTIFIER)) {
+    if (!expectSymbol(TOKEN_IDENTIFIER)) {
       return false;
     }
     VarNames.push_back(Lexer->CurTokenText);
@@ -261,7 +261,7 @@ bool Parser::ParseVarDecls(VarDecls* Decls) {
   TypeRef VarType;
   if (Lexer->CurToken == TOKEN_COLON) {
     Lexer->Advance();
-    if (!ParseTypeRef(&VarType)) {
+    if (!parseTypeRef(&VarType)) {
       return false;
     }
   }
@@ -272,7 +272,7 @@ bool Parser::ParseVarDecls(VarDecls* Decls) {
   return true;
 }
 
-bool Parser::ExpectSymbol(TokenType Token) {
+bool Parser::expectSymbol(TokenType Token) {
   if (LLVM_UNLIKELY(Lexer->CurToken != Token)) {
     std::string Err, Found;
     switch (Token) {
@@ -291,13 +291,13 @@ bool Parser::ExpectSymbol(TokenType Token) {
     case TOKEN_UNINDENT: Found = "un-indentation"; break;
     default: Found = u8"‘" + Lexer->CurTokenText.str() + u8"’";
     }
-    ReportError(Err + u8", found " + Found);
+    reportError(Err + u8", found " + Found);
     return false;
   }
   return true;
 }
 
-void Parser::ReportError(const std::string& Error) {
+void Parser::reportError(const std::string& Error) {
   std::cerr << Error << std::endl;
 }
 
