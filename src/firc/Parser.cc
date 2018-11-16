@@ -162,7 +162,13 @@ ProcedureAST* Parser::parseProcedure() {
 
 Statement* Parser::parseStatement() {
   std::unique_ptr<Statement> Result;
+  bool SingleLine = true;
   switch (Lexer->CurToken) {
+  case TOKEN_PROC:
+    SingleLine = false;
+    Result.reset(parseProcedure());
+    break;
+
   case TOKEN_RETURN:
     Result.reset(parseReturnStatement());
     break;
@@ -184,12 +190,12 @@ Statement* Parser::parseStatement() {
     return nullptr;
   }
 
-  if (Lexer->CurToken == TOKEN_COMMENT) {
+  if (SingleLine && Lexer->CurToken == TOKEN_COMMENT) {
     Result->Comment = Lexer->CurTokenText;
     Lexer->Advance();
   }
 
-  if (!expectSymbol(TOKEN_NEWLINE)) {
+  if (SingleLine && !expectSymbol(TOKEN_NEWLINE)) {
     Lexer->Advance();
     return nullptr;
   }

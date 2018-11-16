@@ -30,7 +30,7 @@ std::string parseExpr(llvm::StringRef s) {
   return Parsed;
 }
 
-TEST(ParserTest, Proc) {
+TEST(ParserTest, Procedure) {
   EXPECT_EQ(parse("proc Foo():\n return\n"), "proc Foo():\n    return\n");
   EXPECT_EQ(parse("proc F(x):#Comment\n return\n"),
             "proc F(x):  # Comment\n    return\n");
@@ -51,6 +51,17 @@ TEST(ParserTest, Proc) {
             "proc Foo(a: bar.Baz; b, c; d: bar.Qux):\n    return\n");
   EXPECT_EQ(parse("proc Foo(a: A; aa1: A.A; aa2: A.A; b: B):\n return\n"),
             "proc Foo(a: A; aa1: A.A; aa2: A.A; b: B):\n    return\n");
+}
+
+TEST(ParserTest, Procedure_Nested) {
+  const char *Nested = 
+    "proc Foo():\n"
+    "    var k\n"
+    "    proc Bar():\n"
+    "        var i, j\n"
+    "        return 1\n"
+    "    return 2\n";
+  EXPECT_EQ(parse(Nested), Nested);
 }
 
 TEST(ParserTest, EmptyStatement) {
