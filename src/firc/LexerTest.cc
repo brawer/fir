@@ -25,6 +25,7 @@ std::string RunLexer(llvm::StringRef s) {
     case TOKEN_NEWLINE: result += "NEWLINE"; break;
     case TOKEN_INDENT: result += "INDENT"; break;
     case TOKEN_UNINDENT: result += "UNINDENT"; break;
+    case TOKEN_COMMENT: result += "COMMENT"; break;
     case TOKEN_IDENTIFIER: result += "ID"; break;
     case TOKEN_INTEGER: result += "INTEGER"; break;
     case TOKEN_LEFT_PARENTHESIS: result += "LEFT_PARENTHESIS"; break;
@@ -117,6 +118,19 @@ TEST(LexerTest, Symbols) {
 TEST(LexerTest, UnexpectedChar) {
   EXPECT_EQ(RunLexer("§"), "ERROR_UNEXPECTED_CHAR[§]");
   EXPECT_EQ(RunLexer("₩"), "ERROR_UNEXPECTED_CHAR[₩]");
+}
+
+TEST(LexerTest, Comment) {
+  EXPECT_EQ(RunLexer("# Foo"), "COMMENT[Foo]");
+  EXPECT_EQ(RunLexer("#   Foo Bar "), "COMMENT[Foo Bar]");
+  EXPECT_EQ(RunLexer("#"), "COMMENT");
+  EXPECT_EQ(RunLexer("#\n"), "COMMENT|NEWLINE");
+  EXPECT_EQ(RunLexer("#\r"), "COMMENT|NEWLINE");
+  EXPECT_EQ(RunLexer("#\r\n"), "COMMENT|NEWLINE");
+  EXPECT_EQ(RunLexer("# "), "COMMENT");
+  EXPECT_EQ(RunLexer("# \n"), "COMMENT|NEWLINE");
+  EXPECT_EQ(RunLexer("# \r"), "COMMENT|NEWLINE");
+  EXPECT_EQ(RunLexer("# \r\n"), "COMMENT|NEWLINE");
 }
 
 TEST(LexerTest, Identifier) {

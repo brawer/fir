@@ -147,6 +147,22 @@ bool Lexer::Advance() {
     return CurToken > TOKEN_EOF;
   }
 
+  if (CurChar == '#') {
+    AdvanceChar();
+    SkipWhitespace(/* AlsoSkipLineSeparators */ false);
+    const char* CommentStart = reinterpret_cast<const char*>(CurCharPos);
+    const char* CommentEnd = CommentStart;
+    while (CurChar != EndOfFile && !isLineSeparator(CurChar, NextChar)) {
+      if (LLVM_LIKELY(!isWhitespace(CurChar))) {
+        CommentEnd = reinterpret_cast<const char*>(NextCharPos);
+      }
+      AdvanceChar();
+    }
+    NextToken = TOKEN_COMMENT;
+    NextTokenText = llvm::StringRef(CommentStart, CommentEnd - CommentStart);
+    return CurToken > TOKEN_EOF;
+  }
+
   if (isIdentifierStart(CurChar)) {
     const char FirstChar = CurChar;
     bool Normalized = true;
