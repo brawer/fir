@@ -38,12 +38,24 @@ Parser::~Parser() {
 
 void Parser::parse() {
   while (Lexer->Advance()) {
-    if (Lexer->CurToken == TOKEN_PROC) {
-      std::unique_ptr<ProcedureAST> p(parseProcedure());
-      if (p.get() != nullptr) {
-        FileAST->Body.push_back(p.release());
-      }
-      continue;
+    std::unique_ptr<Statement> TopLevelStatement;
+    switch (Lexer->CurToken) {
+    case TOKEN_NEWLINE:
+    case TOKEN_COMMENT:
+    case TOKEN_PROC:
+    case TOKEN_VAR:
+      TopLevelStatement.reset(parseStatement());
+      break;
+
+    default:
+      reportError("Expected proc, var, or comment");
+      break;
+    }
+
+    if (TopLevelStatement) {
+      FileAST->Body.push_back(TopLevelStatement.release());
+    } else {
+      Lexer->skipAnythingIndented();
     }
   }
 }

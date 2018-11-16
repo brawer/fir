@@ -309,6 +309,11 @@ void Lexer::SkipWhitespace(bool AlsoSkipLineSeparators) {
   }
 }
 
+void Lexer::skipAnythingIndented() {
+  while (!Indents.empty() && Advance()) {
+  }
+}
+
 llvm::StringRef Lexer::ConvertToNFKC(const llvm::StringRef UTF8) {
   // Decompose to NFKD.
   llvm::SmallVector<uint32_t, 16> Text;

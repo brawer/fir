@@ -53,6 +53,7 @@ public:
         llvm::BumpPtrAllocator* allocator);
   ~Lexer();
   bool Advance();
+  void skipAnythingIndented();
   TokenType CurToken, NextToken;
   llvm::StringRef CurTokenText, NextTokenText;
 

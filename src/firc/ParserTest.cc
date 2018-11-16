@@ -65,6 +65,8 @@ TEST(ParserTest, Procedure_Nested) {
 }
 
 TEST(ParserTest, EmptyStatement) {
+  EXPECT_EQ(parse("#\n"), "\n");
+  EXPECT_EQ(parse("# Comment\n"), "# Comment\n");
   EXPECT_EQ(parse("proc P():\n \n return\n"), "proc P():\n    return\n");
   EXPECT_EQ(parse("proc P():\n #\n return\n"), "proc P():\n\n    return\n");
 }
@@ -79,6 +81,8 @@ TEST(ParserTest, ReturnStatement) {
 }
 
 TEST(ParserTest, VarStatement) {
+  EXPECT_EQ(parse("var i\n"), "var i\n");
+  EXPECT_EQ(parse("var i#Comment\n"), "var i  # Comment\n");
   EXPECT_EQ(parse("proc P():\n var i\n"), "proc P():\n    var i\n");
   EXPECT_EQ(parse("proc P():\n var i,j\n"), "proc P():\n    var i, j\n");
   EXPECT_EQ(parse("proc P():\n var i,j:bar . Baz\n"),
