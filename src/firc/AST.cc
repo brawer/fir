@@ -92,22 +92,10 @@ void ReturnStatement::write(int Indent, std::ostream* Out) const {
 void VarStatement::write(int Indent, std::ostream* Out) const {
   startLine(Indent, Out);
   *Out << "var ";
-  const size_t NumVars = Vars.size();
-  char Separator = ' ';
-  for (size_t i = 0; i < NumVars; ++i) {
-    if (Separator != ' ') *Out << Separator << ' ';
-    const VarDecl* CurVar = Vars[i];
-    const VarDecl* NextVar = i + 1 < NumVars ? Vars[i + 1] : nullptr;
-    *Out << CurVar->Name.str();
-    if (NextVar != nullptr && NextVar->Type.equals(CurVar->Type)) {
-      Separator = ',';
-    } else {
-      if (CurVar->Type.isSpecified()) {
-        *Out << ": ";
-        CurVar->Type.write(Out);
-      }
-      Separator = ';';
-    }
+  bool First = true;
+  for (auto CurVar : Vars) {
+    if (First) First = false; else *Out << "; ";
+    CurVar->write(Out);
   }
   endLine(Out);
 }
@@ -182,8 +170,20 @@ void ProcedureParamAST::write(std::ostream* Out) const {
   *Out << Name.str();  // TODO: Add colon and Type if present
 }
 
-VarDecl::VarDecl(const llvm::StringRef &Name, const TypeRef &Type)
-  : Name(Name), Type(Type) {
+VarDecl::VarDecl(const Names &VarNames, const TypeRef &Type)
+  : VarNames(VarNames), Type(Type) {
+}
+
+void VarDecl::write(std::ostream* Out) const {
+  bool First = true;
+  for (auto Name : VarNames) {
+    if (First) First = false; else *Out << ", ";
+    *Out << Name.str();
+  }
+  if (Type.isSpecified()) {
+    *Out << ": ";
+    Type.write(Out);
+  }
 }
 
 }  // namespace firc

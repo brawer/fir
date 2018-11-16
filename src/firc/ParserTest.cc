@@ -73,7 +73,7 @@ TEST(ParserTest, VarStatement) {
   EXPECT_EQ(parse("proc P():\n var i,j:bar . Baz; cond: fir.Bool\n"),
             "proc P():\n    var i, j: bar.Baz; cond: fir.Bool\n");
   EXPECT_EQ(parse("proc P():\n var i,j:Int; k: Int; cond: Bool\n"),
-            "proc P():\n    var i, j, k: Int; cond: Bool\n");
+            "proc P():\n    var i, j: Int; k: Int; cond: Bool\n");
   EXPECT_EQ(parse("proc P():\n var i#C\n"), "proc P():\n    var i  # C\n");
 }
 

@@ -71,10 +71,13 @@ public:
   std::unique_ptr<Expr> Result;
 };
 
+typedef llvm::SmallVector<llvm::StringRef, 4> Names;
+
 class VarDecl {
 public:
-  VarDecl(const llvm::StringRef &Name, const TypeRef &Type);
-  llvm::StringRef Name;
+  VarDecl(const Names &Names, const TypeRef &Type);
+  virtual void write(std::ostream *Out) const;
+  Names VarNames;
   TypeRef Type;
 };
 

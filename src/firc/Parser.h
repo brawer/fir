@@ -45,7 +45,7 @@ private:
 
   ProcedureAST* parseProcedure();
   bool parseProcedureParams(ProcedureAST* P);
-  bool parseVarDecls(VarDecls* Decls);
+  bool parseVarDecl(VarDecls* Decls);
 
   Statement* parseStatement();
   ReturnStatement* parseReturnStatement();

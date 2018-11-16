@@ -243,13 +243,13 @@ VarStatement* Parser::parseVarStatement() {
 
   Lexer->Advance();
   std::unique_ptr<VarStatement> result(new VarStatement());
-  if (!parseVarDecls(&result->Vars)) {
+  if (!parseVarDecl(&result->Vars)) {
     return nullptr;
   }
 
   while (Lexer->CurToken == TOKEN_SEMICOLON) {
     Lexer->Advance();
-    if (!parseVarDecls(&result->Vars)) {
+    if (!parseVarDecl(&result->Vars)) {
       return nullptr;
     }
   }
@@ -257,8 +257,8 @@ VarStatement* Parser::parseVarStatement() {
   return result.release();
 }
 
-bool Parser::parseVarDecls(VarDecls* Decls) {
-  llvm::SmallVector<llvm::StringRef, 4> VarNames;
+bool Parser::parseVarDecl(VarDecls* Decls) {
+  Names VarNames;
   if (!expectSymbol(TOKEN_IDENTIFIER)) {
     return false;
   }
@@ -281,9 +281,7 @@ bool Parser::parseVarDecls(VarDecls* Decls) {
     }
   }
 
-  for (auto Name : VarNames) {
-    Decls->push_back(new VarDecl(Name, VarType));
-  }
+  Decls->push_back(new VarDecl(VarNames, VarType));
   return true;
 }
 
