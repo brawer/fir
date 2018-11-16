@@ -47,6 +47,17 @@ void TypeRef::write(std::ostream* Out) const {
 Statement::~Statement() {
 }
 
+IntExpr::IntExpr(llvm::APSInt Value) :
+  Value(Value) {
+}
+
+IntExpr::~IntExpr() {
+}
+
+void IntExpr::write(std::ostream* Out) const {
+  *Out << Value.toString(/*radix*/ 10);
+}
+
 void Statement::startLine(int Indent, std::ostream* Out) const {
   for (int i = 0; i < Indent; ++i) {
     *Out << "    ";
@@ -71,6 +82,10 @@ void EmptyStatement::write(int Indent, std::ostream* Out) const {
 void ReturnStatement::write(int Indent, std::ostream* Out) const {
   startLine(Indent, Out);
   *Out << "return";
+  if (Result) {
+    *Out << ' ';
+    Result->write(Out);
+  }
   endLine(Out);
 }
 

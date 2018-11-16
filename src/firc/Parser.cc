@@ -65,6 +65,26 @@ bool Parser::ParseTypeRef(TypeRef* T) {
   return true;
 }
 
+bool Parser::isAtExprStart() const {
+  return Lexer->CurToken == TOKEN_INTEGER;
+}
+
+Expr* Parser::parseExpr() {
+  switch (Lexer->CurToken) {
+  case TOKEN_INTEGER: {
+    std::unique_ptr<IntExpr> IntEx(
+        new IntExpr(llvm::APSInt(Lexer->CurTokenText)));
+    Lexer->Advance();
+    return IntEx.release();
+  }
+
+  default: {
+    ReportError("Expected expression");
+    return nullptr;
+  }
+  }
+}
+
 ProcedureAST* Parser::ParseProcedure() {
   assert(Lexer->CurToken == TOKEN_PROC);
   Lexer->Advance();
@@ -188,12 +208,17 @@ Statement* Parser::ParseStatement() {
 }
 
 ReturnStatement* Parser::ParseReturnStatement() {
+  std::unique_ptr<ReturnStatement> Result(new ReturnStatement());
   if (!ExpectSymbol(TOKEN_RETURN)) {
     return nullptr;
   }
 
   Lexer->Advance();
-  return new ReturnStatement();
+  if (isAtExprStart()) {
+    Result->Result.reset(parseExpr());
+  }
+
+  return Result.release();
 }
 
 VarStatement* Parser::ParseVarStatement() {

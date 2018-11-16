@@ -39,6 +39,10 @@ private:
 
   void Parse();
   bool ParseTypeRef(TypeRef* T);
+
+  bool isAtExprStart() const;
+  Expr* parseExpr();
+
   ProcedureAST* ParseProcedure();
   bool ParseProcedureParams(ProcedureAST* P);
   bool ParseVarDecls(VarDecls* Decls);

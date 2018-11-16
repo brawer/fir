@@ -18,6 +18,7 @@
 
 #include <memory>
 #include <sstream>
+#include <llvm/ADT/APSInt.h>
 #include <llvm/ADT/StringRef.h>
 #include <llvm/Support/Allocator.h>
 
@@ -32,6 +33,20 @@ public:
   bool isSpecified() const { return !QualifiedName.empty(); }
   bool equals(const TypeRef& Other) const;
   llvm::SmallVector<llvm::StringRef, 4> QualifiedName;
+};
+
+class Expr {
+public:
+  virtual ~Expr() {}
+  virtual void write(std::ostream* Out) const = 0;
+};
+
+class IntExpr : public Expr {
+public:
+  explicit IntExpr(llvm::APSInt Value);
+  virtual ~IntExpr();
+  virtual void write(std::ostream* Out) const;
+  llvm::APSInt Value;
 };
 
 class Statement {
@@ -53,6 +68,7 @@ public:
 class ReturnStatement : public Statement {
 public:
   virtual void write(int Indent, std::ostream* Out) const;
+  std::unique_ptr<Expr> Result;
 };
 
 class VarDecl {

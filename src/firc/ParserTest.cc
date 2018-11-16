@@ -20,6 +20,16 @@ std::string Parse(llvm::StringRef s) {
   return Out.str();
 }
 
+std::string parseExpr(llvm::StringRef s) {
+  const std::string Prefix = u8"proc P():\n    return ";
+  std::string Parsed = Parse(Prefix + s.str() + u8"\n");
+  if (Parsed.size() >= Prefix.size() + 1) {
+    Parsed.erase(0, Prefix.size());
+    Parsed.pop_back();
+  }
+  return Parsed;
+}
+
 TEST(ParserTest, Proc) {
   EXPECT_EQ(Parse(u8"proc Foo():\n return\n"), u8"proc Foo():\n    return\n");
   EXPECT_EQ(Parse(u8"proc F(x):\n return\n"), u8"proc F(x):\n    return\n");
@@ -47,6 +57,7 @@ TEST(ParserTest, EmptyStatement) {
 
 TEST(ParserTest, ReturnStatement) {
   EXPECT_EQ(Parse(u8"proc P():\n return\n"), u8"proc P():\n    return\n");
+  EXPECT_EQ(Parse(u8"proc P():\n return 2\n"), u8"proc P():\n    return 2\n");
 }
 
 TEST(ParserTest, VarStatement) {
@@ -58,6 +69,14 @@ TEST(ParserTest, VarStatement) {
             u8"proc P():\n    var i, j: bar.Baz; cond: fir.Bool\n");
   EXPECT_EQ(Parse(u8"proc P():\n var i,j:Int; k: Int; cond: Bool\n"),
             u8"proc P():\n    var i, j, k: Int; cond: Bool\n");
+}
+
+TEST(ParserTest, IntExpr) {
+  EXPECT_EQ(parseExpr("1"), "1");
+  EXPECT_EQ(parseExpr("-2"), "-2");
+  EXPECT_EQ(parseExpr("+3"), "3");
+  EXPECT_EQ(parseExpr("12345678901234567890123456789012345678901234567890"),
+            "12345678901234567890123456789012345678901234567890");
 }
 
 }  // namespace firc
