@@ -92,7 +92,7 @@ ProcedureAST* Parser::parseProcedure() {
     return nullptr;
   }
 
-  std::unique_ptr<ProcedureAST> result(new ProcedureAST(Lexer->CurTokenText));
+  std::unique_ptr<ProcedureAST> Result(new ProcedureAST(Lexer->CurTokenText));
 
   Lexer->Advance();
   if (!expectSymbol(TOKEN_LEFT_PARENTHESIS)) {
@@ -101,12 +101,12 @@ ProcedureAST* Parser::parseProcedure() {
 
   Lexer->Advance();
   if (Lexer->CurToken != TOKEN_RIGHT_PARENTHESIS) {
-    if (!parseProcedureParams(result.get())) {
+    if (!parseVarDecl(&Result->Params)) {
       return nullptr;
     }
     while (Lexer->CurToken == TOKEN_SEMICOLON) {
       Lexer->Advance();
-      if (!parseProcedureParams(result.get())) {
+      if (!parseVarDecl(&Result->Params)) {
         return nullptr;
       }
     }
@@ -123,7 +123,7 @@ ProcedureAST* Parser::parseProcedure() {
 
   Lexer->Advance();
   if (Lexer->CurToken != TOKEN_NEWLINE) {  // TODO: TOKEN_COMMENT
-    if (!parseTypeRef(&result->ResultType)) {
+    if (!parseTypeRef(&Result->ResultType)) {
       return nullptr;
     }
   }
@@ -141,7 +141,7 @@ ProcedureAST* Parser::parseProcedure() {
   while (Lexer->CurToken != TOKEN_UNINDENT) {
     Statement* S = parseStatement();
     if (S != nullptr) {
-      result->Body.push_back(S);
+      Result->Body.push_back(S);
     }
   }
 
@@ -149,39 +149,7 @@ ProcedureAST* Parser::parseProcedure() {
     return nullptr;
   }
 
-  return result.release();
-}
-
-bool Parser::parseProcedureParams(ProcedureAST* proc) {
-  llvm::SmallVector<llvm::StringRef, 4> ParamNames;
-  if (!expectSymbol(TOKEN_IDENTIFIER)) {
-    return false;
-  }
-  ParamNames.push_back(Lexer->CurTokenText);
-
-  Lexer->Advance();
-  while (Lexer->CurToken == TOKEN_COMMA) {
-    Lexer->Advance();
-    if (!expectSymbol(TOKEN_IDENTIFIER)) {
-      return false;
-    }
-    ParamNames.push_back(Lexer->CurTokenText);
-    Lexer->Advance();
-  }
-
-  TypeRef ParamType;
-  if (Lexer->CurToken == TOKEN_COLON) {
-    Lexer->Advance();
-    if (!parseTypeRef(&ParamType)) {
-      return false;
-    }
-  }
-
-  for (auto Name : ParamNames) {
-    proc->Params.push_back(new ProcedureParamAST(Name, ParamType));
-  }
-
-  return true;
+  return Result.release();
 }
 
 Statement* Parser::parseStatement() {

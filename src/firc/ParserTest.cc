@@ -48,7 +48,7 @@ TEST(ParserTest, Proc) {
   EXPECT_EQ(parse("proc Foo(a: bar.Baz; b, c; d: bar.Qux):\n return\n"),
             "proc Foo(a: bar.Baz; b, c; d: bar.Qux):\n    return\n");
   EXPECT_EQ(parse("proc Foo(a: A; aa1: A.A; aa2: A.A; b: B):\n return\n"),
-            "proc Foo(a: A; aa1, aa2: A.A; b: B):\n    return\n");
+            "proc Foo(a: A; aa1: A.A; aa2: A.A; b: B):\n    return\n");
 }
 
 TEST(ParserTest, EmptyStatement) {

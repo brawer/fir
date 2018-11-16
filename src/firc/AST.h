@@ -105,18 +105,9 @@ public:
   void write(std::ostream* Out) const;
 
   llvm::StringRef Name;
-  llvm::SmallVector<ProcedureParamAST*, 8> Params;
+  VarDecls Params;
   llvm::SmallVector<Statement*, 8> Body;
   TypeRef ResultType;
-};
-
-class ProcedureParamAST {
-public:
-  ProcedureParamAST(const llvm::StringRef& Name, const TypeRef& Type);
-  void write(std::ostream* Out) const;
-
-  llvm::StringRef Name;
-  firc::TypeRef Type;
 };
 
 };  // namespace firc

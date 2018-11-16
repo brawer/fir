@@ -127,23 +127,10 @@ ProcedureAST::~ProcedureAST() {
 
 void ProcedureAST::write(std::ostream* Out) const {
   *Out << "proc " << Name.str() << "(";
-  const size_t NumParams = Params.size();
-  char Separator = ' ';
-  for (size_t i = 0; i < NumParams; ++i) {
-    if (Separator != ' ') *Out << Separator << ' ';
-    const ProcedureParamAST* Param = Params[i];
-    const ProcedureParamAST* NextParam =
-        i + 1 < NumParams ? Params[i + 1] : nullptr;
-    *Out << Param->Name.str();
-    if (NextParam != nullptr && NextParam->Type.equals(Param->Type)) {
-      Separator = ',';
-    } else {
-      if (Param->Type.isSpecified()) {
-        *Out << ": ";
-        Param->Type.write(Out);
-      }
-      Separator = ';';
-    }
+  bool First = true;
+  for (auto Param : Params) {
+    if (First) First = false; else *Out << "; ";
+    Param->write(Out);
   }
   *Out << "):";
   if (ResultType.isSpecified()) {
@@ -159,15 +146,6 @@ void ProcedureAST::write(std::ostream* Out) const {
   for (auto Statement : Body) {
     Statement->write(/* Indent */ 1, Out);
   }
-}
-
-ProcedureParamAST::ProcedureParamAST(const llvm::StringRef &Name,
-                                     const TypeRef &Type)
-  : Name(Name), Type(Type) {
-}
-
-void ProcedureParamAST::write(std::ostream* Out) const {
-  *Out << Name.str();  // TODO: Add colon and Type if present
 }
 
 VarDecl::VarDecl(const Names &VarNames, const TypeRef &Type)
