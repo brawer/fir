@@ -195,14 +195,29 @@ Statement* Parser::parseStatement() {
     Result.reset(parseVarStatement());
     break;
 
+  case TOKEN_COMMENT:
+    Result.reset(new EmptyStatement());
+    break;
+
   default:
     reportError("Expected a statement");
-    while (Lexer->CurToken != TOKEN_NEWLINE) {
+    while (Lexer->CurToken != TOKEN_NEWLINE && Lexer->CurToken != TOKEN_EOF) {
       Lexer->Advance();
     }
     Lexer->Advance();
     return nullptr;
   }
+
+  if (Lexer->CurToken == TOKEN_COMMENT) {
+    Result->Comment = Lexer->CurTokenText;
+    Lexer->Advance();
+  }
+
+  if (!expectSymbol(TOKEN_NEWLINE)) {
+    Lexer->Advance();
+    return nullptr;
+  }
+
   Lexer->Advance();
   return Result.release();
 }
@@ -289,6 +304,7 @@ bool Parser::expectSymbol(TokenType Token) {
     case TOKEN_NEWLINE: Found = "end of line"; break;
     case TOKEN_INDENT: Found = "indentation"; break;
     case TOKEN_UNINDENT: Found = "un-indentation"; break;
+    case TOKEN_COMMENT: Found = "comment"; break;
     default: Found = u8"‘" + Lexer->CurTokenText.str() + u8"’";
     }
     reportError(Err + u8", found " + Found);

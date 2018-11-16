@@ -53,11 +53,16 @@ TEST(ParserTest, Proc) {
 
 TEST(ParserTest, EmptyStatement) {
   EXPECT_EQ(parse("proc P():\n \n return\n"), "proc P():\n    return\n");
+  EXPECT_EQ(parse("proc P():\n #\n return\n"), "proc P():\n\n    return\n");
 }
 
 TEST(ParserTest, ReturnStatement) {
   EXPECT_EQ(parse("proc P():\n return\n"), "proc P():\n    return\n");
   EXPECT_EQ(parse("proc P():\n return 2\n"), "proc P():\n    return 2\n");
+  EXPECT_EQ(parse("proc P():\n return #Blah blah.\n"),
+            "proc P():\n    return  # Blah blah.\n");
+  EXPECT_EQ(parse("proc P():\n return -123 # Blah blah.\n"),
+            "proc P():\n    return -123  # Blah blah.\n");
 }
 
 TEST(ParserTest, VarStatement) {
@@ -69,6 +74,7 @@ TEST(ParserTest, VarStatement) {
             "proc P():\n    var i, j: bar.Baz; cond: fir.Bool\n");
   EXPECT_EQ(parse("proc P():\n var i,j:Int; k: Int; cond: Bool\n"),
             "proc P():\n    var i, j, k: Int; cond: Bool\n");
+  EXPECT_EQ(parse("proc P():\n var i#C\n"), "proc P():\n    var i  # C\n");
 }
 
 TEST(ParserTest, IntExpr) {
