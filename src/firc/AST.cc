@@ -112,7 +112,7 @@ void FileAST::write(std::ostream* Out) const {
   for (auto p : Procedures) {
     if (!First) *Out << '\n';
     First = false;
-    p->write(Out);
+    p->write(/* Indent */ 0, Out);
   }
 }
 
@@ -125,7 +125,8 @@ ProcedureAST::~ProcedureAST() {
   for (auto S : Body) delete S;
 }
 
-void ProcedureAST::write(std::ostream* Out) const {
+void ProcedureAST::write(int Indent, std::ostream* Out) const {
+  startLine(Indent, Out);
   *Out << "proc " << Name.str() << "(";
   bool First = true;
   for (auto Param : Params) {
@@ -142,9 +143,9 @@ void ProcedureAST::write(std::ostream* Out) const {
       *Out << NamePart.str();
     }
   }
-  *Out << "\n";
+  endLine(Out);
   for (auto Statement : Body) {
-    Statement->write(/* Indent */ 1, Out);
+    Statement->write(Indent + 1, Out);
   }
 }
 

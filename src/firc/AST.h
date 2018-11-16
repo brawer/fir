@@ -98,11 +98,11 @@ public:
   llvm::SmallVector<ProcedureAST*, 32> Procedures;
 };
 
-class ProcedureAST {
+class ProcedureAST : public Statement {
 public:
   ProcedureAST(llvm::StringRef name);
-  ~ProcedureAST();
-  void write(std::ostream* Out) const;
+  virtual ~ProcedureAST();
+  virtual void write(int Indent, std::ostream* Out) const;
 
   llvm::StringRef Name;
   VarDecls Params;
