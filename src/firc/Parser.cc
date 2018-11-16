@@ -42,13 +42,14 @@ void Parser::parse() {
     switch (Lexer->CurToken) {
     case TOKEN_NEWLINE:
     case TOKEN_COMMENT:
+    case TOKEN_CONST:
     case TOKEN_PROC:
     case TOKEN_VAR:
       TopLevelStatement.reset(parseStatement());
       break;
 
     default:
-      reportError("Expected proc, var, or comment");
+      reportError("Expected const, proc, var, or comment");
       break;
     }
 
@@ -176,6 +177,10 @@ Statement* Parser::parseStatement() {
   std::unique_ptr<Statement> Result;
   bool SingleLine = true;
   switch (Lexer->CurToken) {
+  case TOKEN_CONST:
+    Result.reset(parseConstStatement());
+    break;
+
   case TOKEN_PROC:
     SingleLine = false;
     Result.reset(parseProcedure());
@@ -225,6 +230,33 @@ ReturnStatement* Parser::parseReturnStatement() {
   Lexer->Advance();
   if (isAtExprStart()) {
     Result->Result.reset(parseExpr());
+  }
+
+  return Result.release();
+}
+
+ConstStatement* Parser::parseConstStatement() {
+  std::unique_ptr<ConstStatement> Result(new ConstStatement());
+  if (!expectSymbol(TOKEN_CONST)) {
+    return nullptr;
+  }
+
+  Lexer->Advance();
+  std::unique_ptr<VarDecl> Decl(parseVarDecl());
+  if (!Decl) {
+    return nullptr;
+  }
+  Result->Consts.push_back(Decl.release());
+  // TODO: Make sure we have an initializer.
+
+  while (Lexer->CurToken == TOKEN_SEMICOLON) {
+    Lexer->Advance();
+    Decl.reset(parseVarDecl());
+    if (!Decl) {
+      return nullptr;
+    }
+    Result->Consts.push_back(Decl.release());
+    // TODO: Make sure we have an initializer.
   }
 
   return Result.release();

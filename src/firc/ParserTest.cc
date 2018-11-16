@@ -66,6 +66,14 @@ TEST(ParserTest, Procedure_Nested) {
   EXPECT_EQ(parse(Nested), Nested);
 }
 
+TEST(ParserTest, ConstStatement) {
+  EXPECT_EQ(parse("const i = 6 #Comment\n"), "const i = 6  # Comment\n");
+  EXPECT_EQ(parse("const i = 6; j = 7\n"), "const i = 6; j = 7\n");
+  EXPECT_EQ(parse("const i: Int = 6\n"), "const i: Int = 6\n");
+  EXPECT_EQ(parse("const i: Int = 6; j: Int = 7\n"),
+            "const i: Int = 6; j: Int = 7\n");
+}
+
 TEST(ParserTest, EmptyStatement) {
   EXPECT_EQ(parse("#\n"), "\n");
   EXPECT_EQ(parse("# Comment\n"), "# Comment\n");

@@ -47,6 +47,7 @@ private:
   VarDecl* parseVarDecl();
 
   Statement* parseStatement();
+  ConstStatement* parseConstStatement();
   ReturnStatement* parseReturnStatement();
   VarStatement* parseVarStatement();
 

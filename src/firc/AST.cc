@@ -71,6 +71,17 @@ void Statement::endLine(std::ostream* Out) const {
   *Out << '\n';
 }
 
+void ConstStatement::write(int Indent, std::ostream* Out) const {
+  startLine(Indent, Out);
+  *Out << "const ";
+  bool First = true;
+  for (auto Const : Consts) {
+    if (First) First = false; else *Out << "; ";
+    Const->write(Out);
+  }
+  endLine(Out);
+}
+
 void EmptyStatement::write(int Indent, std::ostream* Out) const {
   if (!Comment.empty()) {
     startLine(Indent, Out);

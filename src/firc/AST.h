@@ -84,6 +84,12 @@ public:
 
 typedef llvm::SmallVector<VarDecl*, 4> VarDecls;
 
+class ConstStatement : public Statement {
+public:
+  virtual void write(int Indent, std::ostream* Out) const;
+  VarDecls Consts;
+};
+
 class VarStatement : public Statement {
 public:
   virtual void write(int Indent, std::ostream* Out) const;
