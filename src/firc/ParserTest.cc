@@ -21,8 +21,8 @@ std::string Parse(llvm::StringRef s) {
 }
 
 std::string parseExpr(llvm::StringRef s) {
-  const std::string Prefix = u8"proc P():\n    return ";
-  std::string Parsed = Parse(Prefix + s.str() + u8"\n");
+  const std::string Prefix = "proc P():\n    return ";
+  std::string Parsed = Parse(Prefix + s.str() + "\n");
   if (Parsed.size() >= Prefix.size() + 1) {
     Parsed.erase(0, Prefix.size());
     Parsed.pop_back();
@@ -31,44 +31,44 @@ std::string parseExpr(llvm::StringRef s) {
 }
 
 TEST(ParserTest, Proc) {
-  EXPECT_EQ(Parse(u8"proc Foo():\n return\n"), u8"proc Foo():\n    return\n");
-  EXPECT_EQ(Parse(u8"proc F(x):\n return\n"), u8"proc F(x):\n    return\n");
-  EXPECT_EQ(Parse(u8"proc Foo():\n return\n return\n"),
-            u8"proc Foo():\n    return\n    return\n");
-  EXPECT_EQ(Parse(u8"proc F(x,y ,z):\n return\n"),
-            u8"proc F(x, y, z):\n    return\n");
-  EXPECT_EQ(Parse(u8"proc Foo(): bar . Baz . Qux\n return\n"),
-            u8"proc Foo(): bar.Baz.Qux\n    return\n");
-  EXPECT_EQ(Parse(u8"proc Foo(x, y: bär.Baz ): bär.Qux\n return\n"),
-            u8"proc Foo(x, y: bär.Baz): bär.Qux\n    return\n");
-  EXPECT_EQ(Parse(u8"proc Foo(a, b, c):\n return\n"),
-            u8"proc Foo(a, b, c):\n    return\n");
-  EXPECT_EQ(Parse(u8"proc Foo(a, b, c; d: bar.Baz):\n return\n"),
-            u8"proc Foo(a, b, c; d: bar.Baz):\n    return\n");
-  EXPECT_EQ(Parse(u8"proc Foo(a: bar.Baz; b, c; d: bar.Qux):\n return\n"),
-            u8"proc Foo(a: bar.Baz; b, c; d: bar.Qux):\n    return\n");
-  EXPECT_EQ(Parse(u8"proc Foo(a: A; aa1: A.A; aa2: A.A; b: B):\n return\n"),
-            u8"proc Foo(a: A; aa1, aa2: A.A; b: B):\n    return\n");
+  EXPECT_EQ(Parse("proc Foo():\n return\n"), "proc Foo():\n    return\n");
+  EXPECT_EQ(Parse("proc F(x):\n return\n"), "proc F(x):\n    return\n");
+  EXPECT_EQ(Parse("proc Foo():\n return\n return\n"),
+            "proc Foo():\n    return\n    return\n");
+  EXPECT_EQ(Parse("proc F(x,y ,z):\n return\n"),
+            "proc F(x, y, z):\n    return\n");
+  EXPECT_EQ(Parse("proc Foo(): bar . Baz . Qux\n return\n"),
+            "proc Foo(): bar.Baz.Qux\n    return\n");
+  EXPECT_EQ(Parse("proc Foo(x, y: bär.Baz ): bär.Qux\n return\n"),
+            "proc Foo(x, y: bär.Baz): bär.Qux\n    return\n");
+  EXPECT_EQ(Parse("proc Foo(a, b, c):\n return\n"),
+            "proc Foo(a, b, c):\n    return\n");
+  EXPECT_EQ(Parse("proc Foo(a, b, c; d: bar.Baz):\n return\n"),
+            "proc Foo(a, b, c; d: bar.Baz):\n    return\n");
+  EXPECT_EQ(Parse("proc Foo(a: bar.Baz; b, c; d: bar.Qux):\n return\n"),
+            "proc Foo(a: bar.Baz; b, c; d: bar.Qux):\n    return\n");
+  EXPECT_EQ(Parse("proc Foo(a: A; aa1: A.A; aa2: A.A; b: B):\n return\n"),
+            "proc Foo(a: A; aa1, aa2: A.A; b: B):\n    return\n");
 }
 
 TEST(ParserTest, EmptyStatement) {
-  EXPECT_EQ(Parse(u8"proc P():\n \n return\n"), u8"proc P():\n    return\n");
+  EXPECT_EQ(Parse("proc P():\n \n return\n"), "proc P():\n    return\n");
 }
 
 TEST(ParserTest, ReturnStatement) {
-  EXPECT_EQ(Parse(u8"proc P():\n return\n"), u8"proc P():\n    return\n");
-  EXPECT_EQ(Parse(u8"proc P():\n return 2\n"), u8"proc P():\n    return 2\n");
+  EXPECT_EQ(Parse("proc P():\n return\n"), "proc P():\n    return\n");
+  EXPECT_EQ(Parse("proc P():\n return 2\n"), "proc P():\n    return 2\n");
 }
 
 TEST(ParserTest, VarStatement) {
-  EXPECT_EQ(Parse(u8"proc P():\n var i\n"), u8"proc P():\n    var i\n");
-  EXPECT_EQ(Parse(u8"proc P():\n var i,j\n"), u8"proc P():\n    var i, j\n");
-  EXPECT_EQ(Parse(u8"proc P():\n var i,j:bar . Baz\n"),
-            u8"proc P():\n    var i, j: bar.Baz\n");
-  EXPECT_EQ(Parse(u8"proc P():\n var i,j:bar . Baz; cond: fir.Bool\n"),
-            u8"proc P():\n    var i, j: bar.Baz; cond: fir.Bool\n");
-  EXPECT_EQ(Parse(u8"proc P():\n var i,j:Int; k: Int; cond: Bool\n"),
-            u8"proc P():\n    var i, j, k: Int; cond: Bool\n");
+  EXPECT_EQ(Parse("proc P():\n var i\n"), "proc P():\n    var i\n");
+  EXPECT_EQ(Parse("proc P():\n var i,j\n"), "proc P():\n    var i, j\n");
+  EXPECT_EQ(Parse("proc P():\n var i,j:bar . Baz\n"),
+            "proc P():\n    var i, j: bar.Baz\n");
+  EXPECT_EQ(Parse("proc P():\n var i,j:bar . Baz; cond: fir.Bool\n"),
+            "proc P():\n    var i, j: bar.Baz; cond: fir.Bool\n");
+  EXPECT_EQ(Parse("proc P():\n var i,j:Int; k: Int; cond: Bool\n"),
+            "proc P():\n    var i, j, k: Int; cond: Bool\n");
 }
 
 TEST(ParserTest, IntExpr) {
