@@ -93,7 +93,6 @@ ProcedureAST* Parser::parseProcedure() {
   }
 
   std::unique_ptr<ProcedureAST> Result(new ProcedureAST(Lexer->CurTokenText));
-
   Lexer->Advance();
   if (!expectSymbol(TOKEN_LEFT_PARENTHESIS)) {
     return nullptr;
@@ -101,14 +100,18 @@ ProcedureAST* Parser::parseProcedure() {
 
   Lexer->Advance();
   if (Lexer->CurToken != TOKEN_RIGHT_PARENTHESIS) {
-    if (!parseVarDecl(&Result->Params)) {
+    std::unique_ptr<VarDecl> Decl(parseVarDecl());
+    if (!Decl) {
       return nullptr;
     }
+    Result->Params.push_back(Decl.release());
     while (Lexer->CurToken == TOKEN_SEMICOLON) {
       Lexer->Advance();
-      if (!parseVarDecl(&Result->Params)) {
+      Decl.reset(parseVarDecl());
+      if (!Decl) {
         return nullptr;
       }
+      Result->Params.push_back(Decl.release());
     }
   }
 
@@ -210,37 +213,41 @@ ReturnStatement* Parser::parseReturnStatement() {
 }
 
 VarStatement* Parser::parseVarStatement() {
+  std::unique_ptr<VarStatement> Result(new VarStatement());
   if (!expectSymbol(TOKEN_VAR)) {
     return nullptr;
   }
 
   Lexer->Advance();
-  std::unique_ptr<VarStatement> result(new VarStatement());
-  if (!parseVarDecl(&result->Vars)) {
+  std::unique_ptr<VarDecl> Decl(parseVarDecl());
+  if (!Decl) {
     return nullptr;
   }
+  Result->Vars.push_back(Decl.release());
 
   while (Lexer->CurToken == TOKEN_SEMICOLON) {
     Lexer->Advance();
-    if (!parseVarDecl(&result->Vars)) {
+    Decl.reset(parseVarDecl());
+    if (!Decl) {
       return nullptr;
     }
+    Result->Vars.push_back(Decl.release());
   }
 
-  return result.release();
+  return Result.release();
 }
 
-bool Parser::parseVarDecl(VarDecls* Decls) {
+VarDecl* Parser::parseVarDecl() {
   Names VarNames;
   if (!expectSymbol(TOKEN_IDENTIFIER)) {
-    return false;
+    return nullptr;
   }
   VarNames.push_back(Lexer->CurTokenText);
   Lexer->Advance();
   while (Lexer->CurToken == TOKEN_COMMA) {
     Lexer->Advance();
     if (!expectSymbol(TOKEN_IDENTIFIER)) {
-      return false;
+      return nullptr;
     }
     VarNames.push_back(Lexer->CurTokenText);
     Lexer->Advance();
@@ -250,12 +257,11 @@ bool Parser::parseVarDecl(VarDecls* Decls) {
   if (Lexer->CurToken == TOKEN_COLON) {
     Lexer->Advance();
     if (!parseTypeRef(&VarType)) {
-      return false;
+      return nullptr;
     }
   }
 
-  Decls->push_back(new VarDecl(VarNames, VarType));
-  return true;
+  return new VarDecl(VarNames, VarType);
 }
 
 bool Parser::expectSymbol(TokenType Token) {
