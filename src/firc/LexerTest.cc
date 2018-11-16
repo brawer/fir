@@ -73,81 +73,81 @@ std::string RunLexer(llvm::StringRef s) {
 
 TEST(LexerTest, ShouldIgnoreByteOrderMark) {
   EXPECT_EQ(RunLexer("\xEF\xBB\xBF"), "");
-  EXPECT_EQ(RunLexer("\xEF\xBB\xBF" "Foo\n"), u8"ID[Foo]|NEWLINE");
+  EXPECT_EQ(RunLexer("\xEF\xBB\xBF" "Foo\n"), "ID[Foo]|NEWLINE");
 }
 
 TEST(LexerTest, Keywords) {
-  EXPECT_EQ(RunLexer(u8"and"), u8"AND[and]");
-  EXPECT_EQ(RunLexer(u8"class"), u8"CLASS[class]");
-  EXPECT_EQ(RunLexer(u8"const"), u8"CONST[const]");
-  EXPECT_EQ(RunLexer(u8"else"), u8"ELSE[else]");
-  EXPECT_EQ(RunLexer(u8"for"), u8"FOR[for]");
-  EXPECT_EQ(RunLexer(u8"if"), u8"IF[if]");
-  EXPECT_EQ(RunLexer(u8"import"), u8"IMPORT[import]");
-  EXPECT_EQ(RunLexer(u8"in"), u8"IN[in]");
-  EXPECT_EQ(RunLexer(u8"is"), u8"IS[is]");
-  EXPECT_EQ(RunLexer(u8"nil"), u8"NIL[nil]");
-  EXPECT_EQ(RunLexer(u8"not"), u8"NOT[not]");
-  EXPECT_EQ(RunLexer(u8"or"), u8"OR[or]");
-  EXPECT_EQ(RunLexer(u8"proc"), u8"PROC[proc]");
-  EXPECT_EQ(RunLexer(u8"return"), u8"RETURN[return]");
-  EXPECT_EQ(RunLexer(u8"var"), u8"VAR[var]");
-  EXPECT_EQ(RunLexer(u8"while"), u8"WHILE[while]");
-  EXPECT_EQ(RunLexer(u8"with"), u8"WITH[with]");
-  EXPECT_EQ(RunLexer(u8"yield"), u8"YIELD[yield]");
+  EXPECT_EQ(RunLexer("and"), "AND[and]");
+  EXPECT_EQ(RunLexer("class"), "CLASS[class]");
+  EXPECT_EQ(RunLexer("const"), "CONST[const]");
+  EXPECT_EQ(RunLexer("else"), "ELSE[else]");
+  EXPECT_EQ(RunLexer("for"), "FOR[for]");
+  EXPECT_EQ(RunLexer("if"), "IF[if]");
+  EXPECT_EQ(RunLexer("import"), "IMPORT[import]");
+  EXPECT_EQ(RunLexer("in"), "IN[in]");
+  EXPECT_EQ(RunLexer("is"), "IS[is]");
+  EXPECT_EQ(RunLexer("nil"), "NIL[nil]");
+  EXPECT_EQ(RunLexer("not"), "NOT[not]");
+  EXPECT_EQ(RunLexer("or"), "OR[or]");
+  EXPECT_EQ(RunLexer("proc"), "PROC[proc]");
+  EXPECT_EQ(RunLexer("return"), "RETURN[return]");
+  EXPECT_EQ(RunLexer("var"), "VAR[var]");
+  EXPECT_EQ(RunLexer("while"), "WHILE[while]");
+  EXPECT_EQ(RunLexer("with"), "WITH[with]");
+  EXPECT_EQ(RunLexer("yield"), "YIELD[yield]");
 }
 
 TEST(LexerTest, Symbols) {
-  EXPECT_EQ(RunLexer(u8"("), u8"LEFT_PARENTHESIS[(]");
-  EXPECT_EQ(RunLexer(u8")"), u8"RIGHT_PARENTHESIS[)]");
-  EXPECT_EQ(RunLexer(u8"["), u8"LEFT_BRACKET[[]");
-  EXPECT_EQ(RunLexer(u8"]"), u8"RIGHT_BRACKET[]]");
-  EXPECT_EQ(RunLexer(u8":"), u8"COLON[:]");
-  EXPECT_EQ(RunLexer(u8";"), u8"SEMICOLON[;]");
-  EXPECT_EQ(RunLexer(u8","), u8"COMMA[,]");
-  EXPECT_EQ(RunLexer(u8"."), u8"DOT[.]");
-  EXPECT_EQ(RunLexer(u8"="), u8"EQUAL[=]");
-  EXPECT_EQ(RunLexer(u8"+"), u8"PLUS[+]");
-  EXPECT_EQ(RunLexer(u8"-"), u8"MINUS[-]");
-  EXPECT_EQ(RunLexer(u8"*"), u8"ASTERISK[*]");
-  EXPECT_EQ(RunLexer(u8"/"), u8"SLASH[/]");
-  EXPECT_EQ(RunLexer(u8"%"), u8"PERCENT[%]");
+  EXPECT_EQ(RunLexer("("), "LEFT_PARENTHESIS[(]");
+  EXPECT_EQ(RunLexer(")"), "RIGHT_PARENTHESIS[)]");
+  EXPECT_EQ(RunLexer("["), "LEFT_BRACKET[[]");
+  EXPECT_EQ(RunLexer("]"), "RIGHT_BRACKET[]]");
+  EXPECT_EQ(RunLexer(":"), "COLON[:]");
+  EXPECT_EQ(RunLexer(";"), "SEMICOLON[;]");
+  EXPECT_EQ(RunLexer(","), "COMMA[,]");
+  EXPECT_EQ(RunLexer("."), "DOT[.]");
+  EXPECT_EQ(RunLexer("="), "EQUAL[=]");
+  EXPECT_EQ(RunLexer("+"), "PLUS[+]");
+  EXPECT_EQ(RunLexer("-"), "MINUS[-]");
+  EXPECT_EQ(RunLexer("*"), "ASTERISK[*]");
+  EXPECT_EQ(RunLexer("/"), "SLASH[/]");
+  EXPECT_EQ(RunLexer("%"), "PERCENT[%]");
 }
 
 TEST(LexerTest, UnexpectedChar) {
-  EXPECT_EQ(RunLexer(u8"§"), u8"ERROR_UNEXPECTED_CHAR[§]");
-  EXPECT_EQ(RunLexer(u8"₩"), u8"ERROR_UNEXPECTED_CHAR[₩]");
+  EXPECT_EQ(RunLexer("§"), "ERROR_UNEXPECTED_CHAR[§]");
+  EXPECT_EQ(RunLexer("₩"), "ERROR_UNEXPECTED_CHAR[₩]");
 }
 
 TEST(LexerTest, Identifier) {
-  EXPECT_EQ(RunLexer(u8"Foo"), u8"ID[Foo]");
-  EXPECT_EQ(RunLexer(u8"Foo123"), u8"ID[Foo123]");
-  EXPECT_EQ(RunLexer(u8"識別子"), u8"ID[識別子]");
-  EXPECT_EQ(RunLexer(u8"شناختساز"), u8"ID[شناختساز]");
+  EXPECT_EQ(RunLexer("Foo"), "ID[Foo]");
+  EXPECT_EQ(RunLexer("Foo123"), "ID[Foo123]");
+  EXPECT_EQ(RunLexer("識別子"), "ID[識別子]");
+  EXPECT_EQ(RunLexer("شناختساز"), "ID[شناختساز]");
 }
 
 TEST(LexerTest, Identifier_HangulSyllables) {
   // Decomposed hangul syllables should get composed.
-  EXPECT_EQ(RunLexer(u8"\u1111\u1171"), u8"ID[\uD4CC]");
-  EXPECT_EQ(RunLexer(u8"\u1111\u1171\u11B6"), u8"ID[\uD4DB]");
+  EXPECT_EQ(RunLexer("\u1111\u1171"), "ID[\uD4CC]");
+  EXPECT_EQ(RunLexer("\u1111\u1171\u11B6"), "ID[\uD4DB]");
 
   // Already pre-composed hangul syllables should stay composed.
-  EXPECT_EQ(RunLexer(u8"\uD4CC"), u8"ID[\uD4CC]");
-  EXPECT_EQ(RunLexer(u8"\uD4DB"), u8"ID[\uD4DB]");
+  EXPECT_EQ(RunLexer("\uD4CC"), "ID[\uD4CC]");
+  EXPECT_EQ(RunLexer("\uD4DB"), "ID[\uD4DB]");
 }
 
 TEST(LexerTest, Identifier_ShouldConvertToNFKC) {
-  EXPECT_EQ(RunLexer(u8"ＦｕｌｌｗｉｄｔｈX１２３"), u8"ID[FullwidthX123]");
-  EXPECT_EQ(RunLexer(u8"\u217B"), u8"ID[xii]"); // SMALL ROMAN NUMERAL TWELVE
-  EXPECT_EQ(RunLexer(u8"ｼｷﾍﾞﾂｼ"), u8"ID[シキベツシ]");
-  EXPECT_EQ(RunLexer(u8"Äöü"), u8"ID[Äöü]");
-  EXPECT_EQ(RunLexer(u8"A\u0308"), u8"ID[Ä]");
-  EXPECT_EQ(RunLexer(u8"\u01B7\u030C"), u8"ID[\u01EE]");  // Ǯ
-  EXPECT_EQ(RunLexer(u8"\u1E69"), u8"ID[\u1E69]");
-  EXPECT_EQ(RunLexer(u8"s\u0323\u0307s\u0323\u0307"), u8"ID[\u1E69\u1E69]");
-  EXPECT_EQ(RunLexer(u8"s\u0307\u0323s\u0307\u0323"), u8"ID[\u1E69\u1E69]");
-  EXPECT_EQ(RunLexer(u8"q\u0307\u0323"), u8"ID[q\u0323\u0307]");
-  EXPECT_EQ(RunLexer(u8"q\u0323\u0307"), u8"ID[q\u0323\u0307]");
+  EXPECT_EQ(RunLexer("ＦｕｌｌｗｉｄｔｈX１２３"), "ID[FullwidthX123]");
+  EXPECT_EQ(RunLexer("\u217B"), "ID[xii]"); // SMALL ROMAN NUMERAL TWELVE
+  EXPECT_EQ(RunLexer("ｼｷﾍﾞﾂｼ"), "ID[シキベツシ]");
+  EXPECT_EQ(RunLexer("Äöü"), "ID[Äöü]");
+  EXPECT_EQ(RunLexer("A\u0308"), "ID[Ä]");
+  EXPECT_EQ(RunLexer("\u01B7\u030C"), "ID[\u01EE]");  // Ǯ
+  EXPECT_EQ(RunLexer("\u1E69"), "ID[\u1E69]");
+  EXPECT_EQ(RunLexer("s\u0323\u0307s\u0323\u0307"), "ID[\u1E69\u1E69]");
+  EXPECT_EQ(RunLexer("s\u0307\u0323s\u0307\u0323"), "ID[\u1E69\u1E69]");
+  EXPECT_EQ(RunLexer("q\u0307\u0323"), "ID[q\u0323\u0307]");
+  EXPECT_EQ(RunLexer("q\u0323\u0307"), "ID[q\u0323\u0307]");
 }
 
 TEST(LexerTest, Indent) {
