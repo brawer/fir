@@ -142,4 +142,9 @@ TEST(ParserTest, IntExpr) {
   EXPECT_EQ(parse("123\n"), ExpectedTopLevelStatement);
 }
 
+TEST(ParserTest, NilExpr) {
+  EXPECT_EQ(parseExpr("nil"), "nil");
+  EXPECT_EQ(parse("nil\n"), ExpectedTopLevelStatement);
+}
+
 }  // namespace firc

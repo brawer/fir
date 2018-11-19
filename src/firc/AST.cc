@@ -50,6 +50,10 @@ void IntExpr::write(std::ostream* Out) const {
   *Out << Value.toString(/*radix*/ 10);
 }
 
+void NilExpr::write(std::ostream* Out) const {
+  *Out << "nil";
+}
+
 void Statement::startLine(int Indent, std::ostream* Out) const {
   for (int i = 0; i < Indent; ++i) {
     *Out << "    ";

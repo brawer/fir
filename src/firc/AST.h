@@ -60,6 +60,13 @@ public:
   llvm::APSInt Value;
 };
 
+class NilExpr : public Expr {
+public:
+  explicit NilExpr() {}
+  virtual ~NilExpr() {}
+  virtual void write(std::ostream* Out) const;
+};
+
 class Statement {
 public:
   virtual ~Statement();
