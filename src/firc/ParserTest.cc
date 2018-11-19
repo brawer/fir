@@ -36,6 +36,9 @@ std::string parseExpr(llvm::StringRef s) {
   return Parsed;
 }
 
+static const char *ExpectedTopLevelStatement =
+    "Error:1:1: Expected const, proc, var, or comment\n";
+
 TEST(ParserTest, Procedure) {
   EXPECT_EQ(parse("proc Foo():\n return\n"), "proc Foo():\n    return\n");
   EXPECT_EQ(parse("proc F(x):#Comment\n return\n"),
@@ -61,6 +64,8 @@ TEST(ParserTest, Procedure) {
             "proc Foo(a: bar.Baz; b, c; d: bar.Qux):\n    return\n");
   EXPECT_EQ(parse("proc Foo(a: A; aa1: A.A; aa2: A.A; b: B):\n return\n"),
             "proc Foo(a: A; aa1: A.A; aa2: A.A; b: B):\n    return\n");
+  EXPECT_EQ(parse("proc Bad():\n    12\n"),
+            "proc Bad():\nError:2:5: Expected a statement\n");
 }
 
 TEST(ParserTest, Procedure_Nested) {
@@ -104,6 +109,7 @@ TEST(ParserTest, ReturnStatement) {
             "proc P():\n    return  # Blah blah.\n");
   EXPECT_EQ(parse("proc P():\n return -123 # Blah blah.\n"),
             "proc P():\n    return -123  # Blah blah.\n");
+  EXPECT_EQ(parse("return\n"), ExpectedTopLevelStatement);
 }
 
 TEST(ParserTest, VarStatement) {
@@ -133,6 +139,7 @@ TEST(ParserTest, IntExpr) {
   EXPECT_EQ(parseExpr("+3"), "3");
   EXPECT_EQ(parseExpr("12345678901234567890123456789012345678901234567890"),
             "12345678901234567890123456789012345678901234567890");
+  EXPECT_EQ(parse("123\n"), ExpectedTopLevelStatement);
 }
 
 }  // namespace firc

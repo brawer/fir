@@ -62,6 +62,7 @@ void Parser::parse() {
     if (TopLevelStatement) {
       FileAST->Body.push_back(TopLevelStatement.release());
     } else {
+      Lexer->Advance();
       Lexer->skipAnythingIndented();
     }
   }
