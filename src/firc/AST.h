@@ -60,6 +60,16 @@ public:
   bool Value;
 };
 
+class DotExpr : public Expr {
+public:
+  explicit DotExpr(Expr* LHS, llvm::StringRef Name) : LHS(LHS), Name(Name) {}
+  virtual ~DotExpr() {}
+  virtual void write(std::ostream* Out) const;
+  std::unique_ptr<Expr> LHS;
+  llvm::StringRef Name;
+  SourceLocation NameLocation;
+};
+
 class IntExpr : public Expr {
 public:
   explicit IntExpr(llvm::APSInt Value);

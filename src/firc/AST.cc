@@ -43,6 +43,14 @@ void BoolExpr::write(std::ostream* Out) const {
   *Out << (Value ? "true" : "false");
 }
 
+void DotExpr::write(std::ostream* Out) const {
+  LHS->write(Out);
+  if (dynamic_cast<IntExpr*>(LHS.get()) != nullptr) {
+    *Out << ' ';
+  }
+  *Out << '.' << Name.str();
+}
+
 IntExpr::IntExpr(llvm::APSInt Value) :
   Value(Value) {
 }

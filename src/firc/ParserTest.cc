@@ -140,6 +140,12 @@ TEST(ParserTest, BoolExpr) {
   EXPECT_EQ(parse("true\n"), ExpectedTopLevelStatement);
 }
 
+TEST(ParserTest, DotExpr) {
+  EXPECT_EQ(parseExpr("1 .add"), "1 .add");
+  EXPECT_EQ(parseExpr("nil.toString"), "nil.toString");
+  EXPECT_EQ(parseExpr("true.toString"), "true.toString");
+}
+
 TEST(ParserTest, IntExpr) {
   EXPECT_EQ(parseExpr("1"), "1");
   EXPECT_EQ(parseExpr("-2"), "-2");
@@ -160,6 +166,7 @@ TEST(ParserTest, ParenthesisExpr) {
   EXPECT_EQ(parseExpr("(false)"), "false");
   EXPECT_EQ(parseExpr("(true)"), "true");
   EXPECT_EQ(parseExpr("(nil)"), "nil");
+  EXPECT_EQ(parseExpr("(nil.hash)"), "nil.hash");
 }
 
 }  // namespace firc

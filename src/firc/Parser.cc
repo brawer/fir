@@ -111,8 +111,7 @@ Expr* Parser::parseExpr() {
   switch (Lexer->CurToken) {
   case TOKEN_LEFT_PARENTHESIS: {
     Result.reset(parseParenthesisExpr());
-    setLocation(Lexer->CurTokenLine, Lexer->CurTokenColumn, &Result->Location);
-    return Result.release();
+    break;
   }
 
   case TOKEN_FALSE: {
@@ -148,6 +147,22 @@ Expr* Parser::parseExpr() {
     Lexer->Advance();
   }
 
+  if (Lexer->CurToken == TOKEN_DOT) {
+    uint32_t DotLine = Lexer->CurTokenLine;
+    uint32_t DotColumn = Lexer->CurTokenColumn;
+    Lexer->Advance();
+    if (!expectSymbol(TOKEN_IDENTIFIER)) {
+      return nullptr;
+    }
+    std::unique_ptr<DotExpr> DotEx(
+        new DotExpr(Result.release(), Lexer->CurTokenText));
+    setLocation(DotLine, DotColumn, &DotEx->Location);
+    setLocation(Lexer->CurTokenLine, Lexer->CurTokenColumn,
+                &DotEx->NameLocation);
+    Lexer->Advance();
+    return DotEx.release();
+  }
+
   return Result.release();
 }
 
@@ -161,8 +176,6 @@ Expr* Parser::parseParenthesisExpr() {
   if (!expectSymbol(TOKEN_RIGHT_PARENTHESIS)) {
     return nullptr;
   }
-  Lexer->Advance();
-
   return Result.release();
 }
 
