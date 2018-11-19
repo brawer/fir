@@ -24,24 +24,6 @@ TypeRef::TypeRef()
   : Optional(false) {
 }
 
-bool TypeRef::equals(const TypeRef &Other) const {
-  if (this == &Other) {
-    return true;
-  }
-  if (this->Optional != Other.Optional) {
-    return false;
-  }
-  if (this->QualifiedName.size() != Other.QualifiedName.size()) {
-    return false;
-  }
-  for (size_t i = 0; i < this->QualifiedName.size(); ++i) {
-    if (!this->QualifiedName[i].equals(Other.QualifiedName[i])) {
-      return false;
-    }
-  }
-  return true;
-}
-
 void TypeRef::write(std::ostream* Out) const {
   if (Optional) {
     *Out << "optional ";
