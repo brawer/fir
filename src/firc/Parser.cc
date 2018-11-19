@@ -23,16 +23,17 @@ namespace firc {
 
 firc::FileAST* Parser::parseFile(llvm::StringRef Filename,
                                  llvm::StringRef Directory,
-                                 const llvm::MemoryBuffer* buf,
-                                 llvm::BumpPtrAllocator* allocator) {
-  firc::Lexer lexer(Filename, Directory, buf, allocator);
-  firc::Parser parser(&lexer);
+                                 const llvm::MemoryBuffer* Buf,
+                                 llvm::BumpPtrAllocator* Allocator,
+                                 ErrorHandler ErrHandler) {
+  firc::Lexer lexer(Filename, Directory, Buf, Allocator);
+  firc::Parser parser(&lexer, ErrHandler);
   parser.parse();
   return parser.FileAST.release();
 }
 
-Parser::Parser(firc::Lexer* Lexer)
-  : Lexer(Lexer),
+Parser::Parser(firc::Lexer* Lexer, ErrorHandler ErrHandler)
+  : Lexer(Lexer), ErrHandler(ErrHandler),
     FileAST(new firc::FileAST(Lexer->Filename, Lexer->Directory)) {
 }
 
@@ -52,7 +53,9 @@ void Parser::parse() {
       break;
 
     default:
-      reportError("Expected const, proc, var, or comment");
+      SourceLocation Loc;
+      setLocation(Lexer->CurTokenLine, Lexer->CurTokenColumn, &Loc);
+      reportError("Expected const, proc, var, or comment", Loc);
       break;
     }
 
@@ -103,7 +106,9 @@ Expr* Parser::parseExpr() {
   }
 
   default: {
-    reportError("Expected expression");
+    SourceLocation Loc;
+    setLocation(Lexer->CurTokenLine, Lexer->CurTokenColumn, &Loc);
+    reportError("Expected expression", Loc);
     return nullptr;
   }
   }
@@ -212,13 +217,16 @@ Statement* Parser::parseStatement() {
     Result.reset(new EmptyStatement());
     break;
 
-  default:
-    reportError("Expected a statement");
+  default: {
+    SourceLocation Loc;
+    setLocation(Lexer->CurTokenLine, Lexer->CurTokenColumn, &Loc);
+    reportError("Expected a statement", Loc);
     while (Lexer->CurToken != TOKEN_NEWLINE && Lexer->CurToken != TOKEN_EOF) {
       Lexer->Advance();
     }
     Lexer->Advance();
     return nullptr;
+  }
   }
 
   if (SingleLine && Lexer->CurToken == TOKEN_COMMENT) {
@@ -305,11 +313,11 @@ VarStatement* Parser::parseVarStatement() {
 VarDecl* Parser::parseConstDecl() {
   VarDecl* Decl = parseVarDecl();
   if (Decl->VarNames.size() > 1) {
-    reportError("Constants must be separated by ‘;’, not ‘,’");
+    reportError("Constants must be separated by ‘;’, not ‘,’", Decl->Location);
   }
   if (Decl && !Decl->Value) {
-    reportError(std::string("Constant ”") + Decl->VarNames[0].str() +
-                "” must have a value");
+    reportError(std::string("Constant “") + Decl->VarNames[0].str() +
+                "” must have a value", Decl->Location);
   }
   return Decl;
 }
@@ -372,14 +380,18 @@ bool Parser::expectSymbol(TokenType Token) {
     case TOKEN_COMMENT: Found = "comment"; break;
     default: Found = u8"‘" + Lexer->CurTokenText.str() + u8"’";
     }
-    reportError(Err + u8", found " + Found);
+
+    SourceLocation Loc;
+    setLocation(Lexer->CurTokenLine, Lexer->CurTokenColumn, &Loc);
+    reportError(Err + u8", found " + Found, Loc);
+
     return false;
   }
   return true;
 }
 
-void Parser::reportError(const std::string& Error) {
-  std::cerr << Error << std::endl;
+void Parser::reportError(const std::string& Error, const SourceLocation &Loc) {
+  ErrHandler(Error, Loc);
 }
 
 void Parser::setLocation(uint32_t Line, uint32_t Column, SourceLocation *Loc) {

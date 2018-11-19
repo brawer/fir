@@ -30,7 +30,7 @@ class MemoryBuffer;
 
 namespace firc {
 
-typedef std::function<void(std::string_view, const SourceLocation&)>
+typedef std::function<void(llvm::StringRef, const SourceLocation&)>
     ErrorHandler;
 
 class Parser {
@@ -38,11 +38,12 @@ public:
   static firc::FileAST* parseFile(
       llvm::StringRef Filename,
       llvm::StringRef Directory,
-      const llvm::MemoryBuffer* buf,
-      llvm::BumpPtrAllocator* allocator);
+      const llvm::MemoryBuffer* Buf,
+      llvm::BumpPtrAllocator* Allocator,
+      ErrorHandler ErrHandler);
 
 private:
-  Parser(firc::Lexer* lexer);
+  Parser(firc::Lexer* lexer, ErrorHandler ErrHandler);
   ~Parser();
 
   void parse();
@@ -61,10 +62,11 @@ private:
   VarStatement* parseVarStatement();
 
   bool expectSymbol(TokenType Token);
-  void reportError(const std::string& Error);
+  void reportError(const std::string& Error, const SourceLocation &Loc);
   void setLocation(uint32_t Line, uint32_t Column, SourceLocation *Loc);
 
   firc::Lexer* Lexer;
+  ErrorHandler ErrHandler;
   std::unique_ptr<firc::FileAST> FileAST;
 };
 

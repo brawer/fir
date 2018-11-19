@@ -11,14 +11,19 @@
 namespace firc {
 
 std::string parse(llvm::StringRef s) {
-  std::string result;
-  llvm::BumpPtrAllocator allocator;
-  std::unique_ptr<llvm::MemoryBuffer> buf(llvm::MemoryBuffer::getMemBuffer(s));
+  llvm::BumpPtrAllocator Allocator;
+  std::unique_ptr<llvm::MemoryBuffer> Buf(llvm::MemoryBuffer::getMemBuffer(s));
+  std::ostringstream Errors;
+  ErrorHandler ErrHandler =
+      [&Errors](llvm::StringRef Err, const SourceLocation& Loc) {
+    Errors << "Error:" << Loc.Line << ':' << Loc.Column << ": " << Err.str()
+           << '\n';
+  };
   std::unique_ptr<FileAST> AST(
-      Parser::parseFile("test.fir", "", buf.get(), &allocator));
+      Parser::parseFile("test.fir", "", Buf.get(), &Allocator, ErrHandler));
   std::ostringstream Out;
   AST->write(&Out);
-  return Out.str();
+  return Out.str() + Errors.str();
 }
 
 std::string parseExpr(llvm::StringRef s) {
@@ -77,10 +82,12 @@ TEST(ParserTest, ConstStatement) {
             "const i: optional Int = 6\n");
   EXPECT_EQ(parse("const i: Int = 6; j: Int = 7\n"),
             "const i: Int = 6; j: Int = 7\n");
-
-  // TODO: Check reported errors.
-  EXPECT_EQ(parse("const i\n"), "const i\n");
-  EXPECT_EQ(parse("const i, j = 1\n"), "const i, j = 1\n");
+  EXPECT_EQ(parse("const i\n"),
+            "const i\n"
+            "Error:1:7: Constant “i” must have a value\n");
+  EXPECT_EQ(parse("const i, j = 1\n"),
+	    "const i, j = 1\n"
+	    "Error:1:7: Constants must be separated by ‘;’, not ‘,’\n");
 }
 
 TEST(ParserTest, EmptyStatement) {
