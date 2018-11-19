@@ -39,6 +39,10 @@ void TypeRef::write(std::ostream* Out) const {
 Statement::~Statement() {
 }
 
+void BoolExpr::write(std::ostream* Out) const {
+  *Out << (Value ? "true" : "false");
+}
+
 IntExpr::IntExpr(llvm::APSInt Value) :
   Value(Value) {
 }

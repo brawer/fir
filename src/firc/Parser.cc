@@ -93,11 +93,27 @@ bool Parser::parseTypeRef(TypeRef* T) {
 }
 
 bool Parser::isAtExprStart() const {
-  return Lexer->CurToken == TOKEN_INTEGER || Lexer->CurToken == TOKEN_NIL;
+  switch (Lexer->CurToken) {
+  case TOKEN_INTEGER:
+  case TOKEN_NIL:
+  case TOKEN_FALSE:
+  case TOKEN_TRUE:
+    return true;
+
+  default:
+    return false;
+  }
 }
 
 Expr* Parser::parseExpr() {
   switch (Lexer->CurToken) {
+  case TOKEN_FALSE: {
+    std::unique_ptr<BoolExpr> BoolEx(new BoolExpr(false));
+    setLocation(Lexer->CurTokenLine, Lexer->CurTokenColumn, &BoolEx->Location);
+    Lexer->Advance();
+    return BoolEx.release();
+  }
+
   case TOKEN_INTEGER: {
     std::unique_ptr<IntExpr> IntEx(
         new IntExpr(llvm::APSInt(Lexer->CurTokenText)));
@@ -111,6 +127,13 @@ Expr* Parser::parseExpr() {
     setLocation(Lexer->CurTokenLine, Lexer->CurTokenColumn, &NilEx->Location);
     Lexer->Advance();
     return NilEx.release();
+  }
+
+  case TOKEN_TRUE: {
+    std::unique_ptr<BoolExpr> BoolEx(new BoolExpr(true));
+    setLocation(Lexer->CurTokenLine, Lexer->CurTokenColumn, &BoolEx->Location);
+    Lexer->Advance();
+    return BoolEx.release();
   }
 
   default: {

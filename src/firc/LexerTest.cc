@@ -46,6 +46,7 @@ std::string RunLexer(llvm::StringRef s) {
     case TOKEN_CLASS: result += "CLASS"; break;
     case TOKEN_CONST: result += "CONST"; break;
     case TOKEN_ELSE: result += "ELSE"; break;
+    case TOKEN_FALSE: result += "FALSE"; break;
     case TOKEN_FOR: result += "FOR"; break;
     case TOKEN_IF: result += "IF"; break;
     case TOKEN_IMPORT: result += "IMPORT"; break;
@@ -57,6 +58,7 @@ std::string RunLexer(llvm::StringRef s) {
     case TOKEN_OR: result += "OR"; break;
     case TOKEN_PROC: result += "PROC"; break;
     case TOKEN_RETURN: result += "RETURN"; break;
+    case TOKEN_TRUE: result += "TRUE"; break;
     case TOKEN_VAR: result += "VAR"; break;
     case TOKEN_WHILE: result += "WHILE"; break;
     case TOKEN_WITH: result += "WITH"; break;
@@ -83,6 +85,7 @@ TEST(LexerTest, Keywords) {
   EXPECT_EQ(RunLexer("class"), "CLASS[class]");
   EXPECT_EQ(RunLexer("const"), "CONST[const]");
   EXPECT_EQ(RunLexer("else"), "ELSE[else]");
+  EXPECT_EQ(RunLexer("false"), "FALSE[false]");
   EXPECT_EQ(RunLexer("for"), "FOR[for]");
   EXPECT_EQ(RunLexer("if"), "IF[if]");
   EXPECT_EQ(RunLexer("import"), "IMPORT[import]");
@@ -94,6 +97,7 @@ TEST(LexerTest, Keywords) {
   EXPECT_EQ(RunLexer("or"), "OR[or]");
   EXPECT_EQ(RunLexer("proc"), "PROC[proc]");
   EXPECT_EQ(RunLexer("return"), "RETURN[return]");
+  EXPECT_EQ(RunLexer("true"), "TRUE[true]");
   EXPECT_EQ(RunLexer("var"), "VAR[var]");
   EXPECT_EQ(RunLexer("while"), "WHILE[while]");
   EXPECT_EQ(RunLexer("with"), "WITH[with]");

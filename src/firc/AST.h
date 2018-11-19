@@ -52,6 +52,14 @@ public:
   SourceLocation Location;
 };
 
+class BoolExpr : public Expr {
+public:
+  explicit BoolExpr(bool V) : Value(V) {}
+  virtual ~BoolExpr() {}
+  virtual void write(std::ostream* Out) const;
+  bool Value;
+};
+
 class IntExpr : public Expr {
 public:
   explicit IntExpr(llvm::APSInt Value);

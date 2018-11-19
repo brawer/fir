@@ -133,6 +133,13 @@ TEST(ParserTest, VarStatement) {
   EXPECT_EQ(parse("proc P():\n var i#C\n"), "proc P():\n    var i  # C\n");
 }
 
+TEST(ParserTest, BoolExpr) {
+  EXPECT_EQ(parseExpr("false"), "false");
+  EXPECT_EQ(parseExpr("true"), "true");
+  EXPECT_EQ(parse("false\n"), ExpectedTopLevelStatement);
+  EXPECT_EQ(parse("true\n"), ExpectedTopLevelStatement);
+}
+
 TEST(ParserTest, IntExpr) {
   EXPECT_EQ(parseExpr("1"), "1");
   EXPECT_EQ(parseExpr("-2"), "-2");

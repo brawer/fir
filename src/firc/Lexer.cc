@@ -216,7 +216,9 @@ bool Lexer::Advance() {
       break;
 
     case 'f':
-      if (NextTokenText == "for") {
+      if (NextTokenText == "false") {
+        NextToken = TOKEN_FALSE;
+      } else if (NextTokenText == "for") {
         NextToken = TOKEN_FOR;
       }
       break;
@@ -258,6 +260,12 @@ bool Lexer::Advance() {
     case 'r':
       if (NextTokenText == "return") {
         NextToken = TOKEN_RETURN;
+      }
+      break;
+
+    case 't':
+      if (NextTokenText == "true") {
+        NextToken = TOKEN_TRUE;
       }
       break;
 
