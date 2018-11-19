@@ -51,6 +51,7 @@ private:
 
   bool isAtExprStart() const;
   Expr* parseExpr();
+  Expr* parseParenthesisExpr();
 
   ProcedureAST* parseProcedure();
   VarDecl* parseConstDecl();

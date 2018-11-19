@@ -154,4 +154,12 @@ TEST(ParserTest, NilExpr) {
   EXPECT_EQ(parse("nil\n"), ExpectedTopLevelStatement);
 }
 
+TEST(ParserTest, ParenthesisExpr) {
+  EXPECT_EQ(parseExpr("(0)"), "0");
+  EXPECT_EQ(parseExpr("((-23))"), "-23");
+  EXPECT_EQ(parseExpr("(false)"), "false");
+  EXPECT_EQ(parseExpr("(true)"), "true");
+  EXPECT_EQ(parseExpr("(nil)"), "nil");
+}
+
 }  // namespace firc

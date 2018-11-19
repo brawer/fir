@@ -94,6 +94,7 @@ bool Parser::parseTypeRef(TypeRef* T) {
 
 bool Parser::isAtExprStart() const {
   switch (Lexer->CurToken) {
+  case TOKEN_LEFT_PARENTHESIS:
   case TOKEN_INTEGER:
   case TOKEN_NIL:
   case TOKEN_FALSE:
@@ -108,6 +109,12 @@ bool Parser::isAtExprStart() const {
 Expr* Parser::parseExpr() {
   std::unique_ptr<Expr> Result;
   switch (Lexer->CurToken) {
+  case TOKEN_LEFT_PARENTHESIS: {
+    Result.reset(parseParenthesisExpr());
+    setLocation(Lexer->CurTokenLine, Lexer->CurTokenColumn, &Result->Location);
+    return Result.release();
+  }
+
   case TOKEN_FALSE: {
     Result.reset(new BoolExpr(false));
     break;
@@ -140,6 +147,21 @@ Expr* Parser::parseExpr() {
     setLocation(Lexer->CurTokenLine, Lexer->CurTokenColumn, &Result->Location);
     Lexer->Advance();
   }
+
+  return Result.release();
+}
+
+Expr* Parser::parseParenthesisExpr() {
+  assert(Lexer->CurToken == TOKEN_LEFT_PARENTHESIS);
+  Lexer->Advance();
+  std::unique_ptr<Expr> Result(parseExpr());
+  if (!Result) {
+    return nullptr;
+  }
+  if (!expectSymbol(TOKEN_RIGHT_PARENTHESIS)) {
+    return nullptr;
+  }
+  Lexer->Advance();
 
   return Result.release();
 }
