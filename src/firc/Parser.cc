@@ -106,34 +106,26 @@ bool Parser::isAtExprStart() const {
 }
 
 Expr* Parser::parseExpr() {
+  std::unique_ptr<Expr> Result;
   switch (Lexer->CurToken) {
   case TOKEN_FALSE: {
-    std::unique_ptr<BoolExpr> BoolEx(new BoolExpr(false));
-    setLocation(Lexer->CurTokenLine, Lexer->CurTokenColumn, &BoolEx->Location);
-    Lexer->Advance();
-    return BoolEx.release();
+    Result.reset(new BoolExpr(false));
+    break;
   }
 
   case TOKEN_INTEGER: {
-    std::unique_ptr<IntExpr> IntEx(
-        new IntExpr(llvm::APSInt(Lexer->CurTokenText)));
-    setLocation(Lexer->CurTokenLine, Lexer->CurTokenColumn, &IntEx->Location);
-    Lexer->Advance();
-    return IntEx.release();
+    Result.reset(new IntExpr(llvm::APSInt(Lexer->CurTokenText)));
+    break;
   }
 
   case TOKEN_NIL: {
-    std::unique_ptr<NilExpr> NilEx(new NilExpr());
-    setLocation(Lexer->CurTokenLine, Lexer->CurTokenColumn, &NilEx->Location);
-    Lexer->Advance();
-    return NilEx.release();
+    Result.reset(new NilExpr());
+    break;
   }
 
   case TOKEN_TRUE: {
-    std::unique_ptr<BoolExpr> BoolEx(new BoolExpr(true));
-    setLocation(Lexer->CurTokenLine, Lexer->CurTokenColumn, &BoolEx->Location);
-    Lexer->Advance();
-    return BoolEx.release();
+    Result.reset(new BoolExpr(true));
+    break;
   }
 
   default: {
@@ -143,6 +135,13 @@ Expr* Parser::parseExpr() {
     return nullptr;
   }
   }
+
+  if (Result) {
+    setLocation(Lexer->CurTokenLine, Lexer->CurTokenColumn, &Result->Location);
+    Lexer->Advance();
+  }
+
+  return Result.release();
 }
 
 ProcedureAST* Parser::parseProcedure() {
