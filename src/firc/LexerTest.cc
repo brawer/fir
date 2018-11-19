@@ -12,7 +12,7 @@ std::string RunLexer(llvm::StringRef s) {
   std::string result;
   llvm::BumpPtrAllocator allocator;
   std::unique_ptr<llvm::MemoryBuffer> buf(llvm::MemoryBuffer::getMemBuffer(s));
-  firc::Lexer lexer(buf.get(), &allocator);
+  firc::Lexer lexer("lexer.fir", "path/to/module", buf.get(), &allocator);
   while (lexer.Advance()) {
     if (!result.empty()) {
       result += '|';

@@ -21,16 +21,19 @@
 
 namespace firc {
 
-firc::FileAST* Parser::parseFile(const llvm::MemoryBuffer* buf,
+firc::FileAST* Parser::parseFile(llvm::StringRef Filename,
+                                 llvm::StringRef Directory,
+                                 const llvm::MemoryBuffer* buf,
                                  llvm::BumpPtrAllocator* allocator) {
-  firc::Lexer lexer(buf, allocator);
+  firc::Lexer lexer(Filename, Directory, buf, allocator);
   firc::Parser parser(&lexer);
   parser.parse();
   return parser.FileAST.release();
 }
 
 Parser::Parser(firc::Lexer* Lexer)
-  : Lexer(Lexer), FileAST(new firc::FileAST()) {
+  : Lexer(Lexer),
+    FileAST(new firc::FileAST(Lexer->Filename, Lexer->Directory)) {
 }
 
 Parser::~Parser() {
@@ -62,6 +65,7 @@ void Parser::parse() {
 }
 
 bool Parser::parseTypeRef(TypeRef* T) {
+  setLocation(Lexer->CurTokenLine, Lexer->CurTokenColumn, &T->Location);
   T->Optional = false;
   if (Lexer->CurToken == TOKEN_OPTIONAL) {
     T->Optional = true;
@@ -93,6 +97,7 @@ Expr* Parser::parseExpr() {
   case TOKEN_INTEGER: {
     std::unique_ptr<IntExpr> IntEx(
         new IntExpr(llvm::APSInt(Lexer->CurTokenText)));
+    setLocation(Lexer->CurTokenLine, Lexer->CurTokenColumn, &IntEx->Location);
     Lexer->Advance();
     return IntEx.release();
   }
@@ -106,12 +111,15 @@ Expr* Parser::parseExpr() {
 
 ProcedureAST* Parser::parseProcedure() {
   assert(Lexer->CurToken == TOKEN_PROC);
+  uint32_t Line = Lexer->CurTokenLine;
+  uint32_t Column = Lexer->CurTokenColumn;
   Lexer->Advance();
   if (!expectSymbol(TOKEN_IDENTIFIER)) {
     return nullptr;
   }
 
   std::unique_ptr<ProcedureAST> Result(new ProcedureAST(Lexer->CurTokenText));
+  setLocation(Line, Column, &Result->Location);
   Lexer->Advance();
   if (!expectSymbol(TOKEN_LEFT_PARENTHESIS)) {
     return nullptr;
@@ -229,6 +237,7 @@ Statement* Parser::parseStatement() {
 
 ReturnStatement* Parser::parseReturnStatement() {
   std::unique_ptr<ReturnStatement> Result(new ReturnStatement());
+  setLocation(Lexer->CurTokenLine, Lexer->CurTokenColumn, &Result->Location);
   if (!expectSymbol(TOKEN_RETURN)) {
     return nullptr;
   }
@@ -243,6 +252,7 @@ ReturnStatement* Parser::parseReturnStatement() {
 
 ConstStatement* Parser::parseConstStatement() {
   std::unique_ptr<ConstStatement> Result(new ConstStatement());
+  setLocation(Lexer->CurTokenLine, Lexer->CurTokenColumn, &Result->Location);
   if (!expectSymbol(TOKEN_CONST)) {
     return nullptr;
   }
@@ -268,6 +278,7 @@ ConstStatement* Parser::parseConstStatement() {
 
 VarStatement* Parser::parseVarStatement() {
   std::unique_ptr<VarStatement> Result(new VarStatement());
+  setLocation(Lexer->CurTokenLine, Lexer->CurTokenColumn, &Result->Location);
   if (!expectSymbol(TOKEN_VAR)) {
     return nullptr;
   }
@@ -305,6 +316,8 @@ VarDecl* Parser::parseConstDecl() {
 
 VarDecl* Parser::parseVarDecl() {
   Names VarNames;
+  uint32_t Line = Lexer->CurTokenLine;
+  uint32_t Column = Lexer->CurTokenColumn;
   if (!expectSymbol(TOKEN_IDENTIFIER)) {
     return nullptr;
   }
@@ -333,7 +346,10 @@ VarDecl* Parser::parseVarDecl() {
     Value.reset(parseExpr());
   }
 
-  return new VarDecl(VarNames, VarType, Value.release());
+  std::unique_ptr<VarDecl> Result(
+      new VarDecl(VarNames, VarType, Value.release()));
+  setLocation(Line, Column, &Result->Location);
+  return Result.release();
 }
 
 bool Parser::expectSymbol(TokenType Token) {
@@ -364,6 +380,12 @@ bool Parser::expectSymbol(TokenType Token) {
 
 void Parser::reportError(const std::string& Error) {
   std::cerr << Error << std::endl;
+}
+
+void Parser::setLocation(uint32_t Line, uint32_t Column, SourceLocation *Loc) {
+  Loc->File = FileAST.get();
+  Loc->Line = Line;
+  Loc->Column = Column;
 }
 
 }  // namespace firc

@@ -25,7 +25,7 @@ int main(int argc, char** argv) {
   llvm::StringRef s("Foo Bar Baz");
   llvm::BumpPtrAllocator allocator;
   std::unique_ptr<llvm::MemoryBuffer> buf(llvm::MemoryBuffer::getMemBuffer(s));
-  firc::Lexer lexer(buf.get(), &allocator);
+  firc::Lexer lexer("hello.fir", "path/to/module", buf.get(), &allocator);
   std::cout << "Hello world" << std::endl;
   while (lexer.Advance()) {
   }

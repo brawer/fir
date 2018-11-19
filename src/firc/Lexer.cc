@@ -28,14 +28,18 @@
 
 namespace firc {
 
-Lexer::Lexer(const llvm::MemoryBuffer* buffer,
+Lexer::Lexer(llvm::StringRef Filename, llvm::StringRef Directory,
+             const llvm::MemoryBuffer* buffer,
              llvm::BumpPtrAllocator* allocator)
-  : BufferPos(
+  : Filename(Filename), Directory(Directory),
+    BufferPos(
         reinterpret_cast<const unsigned char*>(buffer->getBufferStart())),
     BufferEnd(reinterpret_cast<const unsigned char*>(buffer->getBufferEnd())),
     CurCharPos(BufferPos), NextCharPos(BufferPos),
     CurChar(0), NextChar(0x000A), Line(0), Column(0),
-    CurToken(TOKEN_EOF), NextToken(TOKEN_EOF), Allocator(allocator) {
+    CurToken(TOKEN_EOF), NextToken(TOKEN_EOF),
+    CurTokenLine(0), CurTokenColumn(0), NextTokenLine(0), NextTokenColumn(0),
+    Allocator(allocator) {
   // Skip file-initial U+FEFF Byte Order Mark, which is used by
   // some Windows editors to indicate UTF-8 encoding.
   if (BufferPos + 3 <= BufferEnd &&
@@ -81,6 +85,11 @@ void Lexer::AdvanceChar() {
 bool Lexer::Advance() {
   CurToken = NextToken;
   CurTokenText = NextTokenText;
+  CurTokenLine = NextTokenLine;
+  CurTokenColumn = NextTokenColumn;
+
+  NextTokenLine = Line;
+  NextTokenColumn = Column;
 
   if (CurToken < 0) {
     NextToken = TOKEN_EOF;
@@ -126,6 +135,9 @@ bool Lexer::Advance() {
   }
 
   SkipWhitespace(/* also skip line separators? */ false);
+  NextTokenLine = Line;
+  NextTokenColumn = Column;
+
   if (isLineSeparator(CurChar, NextChar)) {
     NextToken = TOKEN_NEWLINE;
     NextTokenText = llvm::StringRef();

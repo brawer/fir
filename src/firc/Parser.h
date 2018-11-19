@@ -16,7 +16,10 @@
 #ifndef FIRC_PARSER_H_
 #define FIRC_PARSER_H_
 
+#include <functional>
 #include <memory>
+#include <string>
+
 #include <llvm/Support/Allocator.h>
 #include "firc/AST.h"
 #include "firc/Lexer.h"
@@ -27,9 +30,14 @@ class MemoryBuffer;
 
 namespace firc {
 
+typedef std::function<void(std::string_view, const SourceLocation&)>
+    ErrorHandler;
+
 class Parser {
 public:
   static firc::FileAST* parseFile(
+      llvm::StringRef Filename,
+      llvm::StringRef Directory,
       const llvm::MemoryBuffer* buf,
       llvm::BumpPtrAllocator* allocator);
 
@@ -54,6 +62,7 @@ private:
 
   bool expectSymbol(TokenType Token);
   void reportError(const std::string& Error);
+  void setLocation(uint32_t Line, uint32_t Column, SourceLocation *Loc);
 
   firc::Lexer* Lexer;
   std::unique_ptr<firc::FileAST> FileAST;

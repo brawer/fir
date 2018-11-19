@@ -24,14 +24,23 @@
 
 namespace firc {
 
+class FileAST;
 class ProcedureAST;
 class ProcedureParamAST;
+
+class SourceLocation {
+public:
+  SourceLocation() : File(nullptr), Line(0), Column(0) {}
+  FileAST *File;
+  uint32_t Line, Column;
+};
 
 class TypeRef {
 public:
   TypeRef();
   void write(std::ostream* Out) const;
   bool isSpecified() const { return !QualifiedName.empty(); }
+  SourceLocation Location;
   llvm::SmallVector<llvm::StringRef, 4> QualifiedName;
   bool Optional;
 };
@@ -40,6 +49,7 @@ class Expr {
 public:
   virtual ~Expr() {}
   virtual void write(std::ostream* Out) const = 0;
+  SourceLocation Location;
 };
 
 class IntExpr : public Expr {
@@ -55,6 +65,7 @@ public:
   virtual ~Statement();
   virtual void write(int Indent, std::ostream* Out) const = 0;
   llvm::StringRef Comment;
+  SourceLocation Location;
 
 protected:
   void startLine(int Indent, std::ostream* Out) const;
@@ -81,6 +92,7 @@ public:
   Names VarNames;
   TypeRef Type;
   std::unique_ptr<Expr> Value;
+  SourceLocation Location;
 };
 
 typedef llvm::SmallVector<VarDecl*, 4> VarDecls;
@@ -99,7 +111,7 @@ public:
 
 class FileAST {
 public:
-  FileAST();
+  FileAST(llvm::StringRef Filename, llvm::StringRef Directory);
   ~FileAST();
   void write(std::ostream* Out) const;
 

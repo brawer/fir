@@ -49,13 +49,16 @@ enum TokenType {
 
 class Lexer {
 public:
-  Lexer(const llvm::MemoryBuffer* buf,
+  Lexer(llvm::StringRef Filename, llvm::StringRef Directory,
+        const llvm::MemoryBuffer* buf,
         llvm::BumpPtrAllocator* allocator);
   ~Lexer();
   bool Advance();
   void skipAnythingIndented();
   TokenType CurToken, NextToken;
   llvm::StringRef CurTokenText, NextTokenText;
+  uint32_t CurTokenLine, CurTokenColumn, NextTokenLine, NextTokenColumn;
+  llvm::StringRef Filename, Directory;
 
 private:
   const uint32_t EndOfFile = 0xFFFFFFFF;

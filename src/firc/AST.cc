@@ -103,7 +103,7 @@ void VarStatement::write(int Indent, std::ostream* Out) const {
   endLine(Out);
 }
 
-FileAST::FileAST() {
+FileAST::FileAST(llvm::StringRef Filename, llvm::StringRef Directory) {
 }
 
 FileAST::~FileAST() {
