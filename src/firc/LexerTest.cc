@@ -53,6 +53,7 @@ std::string RunLexer(llvm::StringRef s) {
     case TOKEN_IS: result += "IS"; break;
     case TOKEN_NIL: result += "NIL"; break;
     case TOKEN_NOT: result += "NOT"; break;
+    case TOKEN_OPTIONAL: result += "OPTIONAL"; break;
     case TOKEN_OR: result += "OR"; break;
     case TOKEN_PROC: result += "PROC"; break;
     case TOKEN_RETURN: result += "RETURN"; break;
@@ -89,6 +90,7 @@ TEST(LexerTest, Keywords) {
   EXPECT_EQ(RunLexer("is"), "IS[is]");
   EXPECT_EQ(RunLexer("nil"), "NIL[nil]");
   EXPECT_EQ(RunLexer("not"), "NOT[not]");
+  EXPECT_EQ(RunLexer("optional"), "OPTIONAL[optional]");
   EXPECT_EQ(RunLexer("or"), "OR[or]");
   EXPECT_EQ(RunLexer("proc"), "PROC[proc]");
   EXPECT_EQ(RunLexer("return"), "RETURN[return]");

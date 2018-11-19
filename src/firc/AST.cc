@@ -20,9 +20,16 @@
 
 namespace firc {
 
+TypeRef::TypeRef()
+  : Optional(false) {
+}
+
 bool TypeRef::equals(const TypeRef &Other) const {
   if (this == &Other) {
     return true;
+  }
+  if (this->Optional != Other.Optional) {
+    return false;
   }
   if (this->QualifiedName.size() != Other.QualifiedName.size()) {
     return false;
@@ -36,6 +43,9 @@ bool TypeRef::equals(const TypeRef &Other) const {
 }
 
 void TypeRef::write(std::ostream* Out) const {
+  if (Optional) {
+    *Out << "optional ";
+  }
   bool First = true;
   for (const llvm::StringRef& Name : QualifiedName) {
     if (!First) *Out << '.';

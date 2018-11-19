@@ -29,10 +29,12 @@ class ProcedureParamAST;
 
 class TypeRef {
 public:
+  TypeRef();
   void write(std::ostream* Out) const;
   bool isSpecified() const { return !QualifiedName.empty(); }
   bool equals(const TypeRef& Other) const;
   llvm::SmallVector<llvm::StringRef, 4> QualifiedName;
+  bool Optional;
 };
 
 class Expr {

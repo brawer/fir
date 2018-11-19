@@ -62,6 +62,12 @@ void Parser::parse() {
 }
 
 bool Parser::parseTypeRef(TypeRef* T) {
+  T->Optional = false;
+  if (Lexer->CurToken == TOKEN_OPTIONAL) {
+    T->Optional = true;
+    Lexer->Advance();
+  }
+
   if (!expectSymbol(TOKEN_IDENTIFIER)) {
     return false;
   }

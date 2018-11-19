@@ -230,7 +230,9 @@ bool Lexer::Advance() {
       break;
 
     case 'o':
-      if (NextTokenText == "or") {
+      if (NextTokenText == "optional") {
+        NextToken = TOKEN_OPTIONAL;
+      } else if (NextTokenText == "or") {
         NextToken = TOKEN_OR;
       }
       break;
