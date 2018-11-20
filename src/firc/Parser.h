@@ -53,6 +53,7 @@ private:
   Expr* parseExpr();
   Expr* parseParenthesisExpr();
   Expr* parsePrimaryExpr();
+  bool isBinaryOperator(TokenType Token) const;
   Expr* parseBinOpRHS(int Precedence, Expr* LHS);
 
   ProcedureAST* parseProcedure();

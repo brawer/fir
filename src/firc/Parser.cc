@@ -107,17 +107,21 @@ bool Parser::isAtExprStart() const {
   }
 }
 
+bool Parser::isBinaryOperator(TokenType Token) const {
+  return Lexer::getPrecedence(Token) >= 0;
+}
+
 Expr* Parser::parseExpr() {
   std::unique_ptr<Expr> Result(parsePrimaryExpr());
   if (!Result) {
     return nullptr;
   }
 
-  if (Lexer::getPrecedence(Lexer->CurToken) >= 0) {
-    return parseBinOpRHS(0, Result.release());
-  } else {
-    return Result.release();
+  if (isBinaryOperator(Lexer->CurToken)) {
+    Result.reset(parseBinOpRHS(0, Result.release()));
   }
+
+  return Result.release();
 }
 
 Expr* Parser::parseBinOpRHS(int Precedence, Expr* LHS) {
