@@ -39,6 +39,16 @@ std::string parseExpr(llvm::StringRef s) {
 static const char *ExpectedTopLevelStatement =
     "Error:1:1: Expected const, proc, var, or comment\n";
 
+TEST(ParserTest, Module) {
+  EXPECT_EQ(parse("module foo\n"), "module foo\n");
+  EXPECT_EQ(parse("module foo.bar.test\n"), "module foo.bar.test\n");
+  EXPECT_EQ(parse("module foo.bar #Comment\n"), "module foo.bar  # Comment\n");
+  EXPECT_EQ(parse("proc f():\n var i\n module x\n"),
+            "proc f():\n"
+            "    var i\n"
+            "Error:3:2: Module declaration must be at top level\n");
+}
+
 TEST(ParserTest, Procedure) {
   EXPECT_EQ(parse("proc Foo():\n return\n"), "proc Foo():\n    return\n");
   EXPECT_EQ(parse("proc F(x):#Comment\n return\n"),

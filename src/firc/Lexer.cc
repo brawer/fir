@@ -235,6 +235,12 @@ bool Lexer::Advance() {
       }
       break;
 
+    case 'm':
+      if (NextTokenText == "module") {
+        NextToken = TOKEN_MODULE;
+      }
+      break;
+
     case 'n':
       if (NextTokenText == "nil") {
         NextToken = TOKEN_NIL;

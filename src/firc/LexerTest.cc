@@ -52,6 +52,7 @@ std::string RunLexer(llvm::StringRef s) {
     case TOKEN_IMPORT: result += "IMPORT"; break;
     case TOKEN_IN: result += "IN"; break;
     case TOKEN_IS: result += "IS"; break;
+    case TOKEN_MODULE: result += "MODULE"; break;
     case TOKEN_NIL: result += "NIL"; break;
     case TOKEN_NOT: result += "NOT"; break;
     case TOKEN_OPTIONAL: result += "OPTIONAL"; break;
@@ -91,6 +92,7 @@ TEST(LexerTest, Keywords) {
   EXPECT_EQ(RunLexer("import"), "IMPORT[import]");
   EXPECT_EQ(RunLexer("in"), "IN[in]");
   EXPECT_EQ(RunLexer("is"), "IS[is]");
+  EXPECT_EQ(RunLexer("module"), "MODULE[module]");
   EXPECT_EQ(RunLexer("nil"), "NIL[nil]");
   EXPECT_EQ(RunLexer("not"), "NOT[not]");
   EXPECT_EQ(RunLexer("optional"), "OPTIONAL[optional]");

@@ -29,6 +29,8 @@ class FileAST;
 class ProcedureAST;
 class ProcedureParamAST;
 
+typedef llvm::SmallVector<llvm::StringRef, 4> Names;
+
 class SourceLocation {
 public:
   SourceLocation() : File(nullptr), Line(0), Column(0) {}
@@ -122,13 +124,19 @@ public:
   virtual void write(int Indent, std::ostream* Out) const;
 };
 
+class ModuleDecl : public Statement {
+public:
+  ModuleDecl() {}
+  virtual ~ModuleDecl() {}
+  virtual void write(int Indent, std::ostream* Out) const;
+  Names ModuleName;
+};
+
 class ReturnStatement : public Statement {
 public:
   virtual void write(int Indent, std::ostream* Out) const;
   std::unique_ptr<Expr> Result;
 };
-
-typedef llvm::SmallVector<llvm::StringRef, 4> Names;
 
 class VarDecl {
 public:
@@ -161,6 +169,7 @@ public:
   void write(std::ostream* Out) const;
 
   llvm::SmallVector<Statement*, 32> Body;
+  ModuleDecl* ModuleDeclaration;
 };
 
 class ProcedureAST : public Statement {

@@ -141,6 +141,17 @@ void EmptyStatement::write(int Indent, std::ostream* Out) const {
   *Out << '\n';
 }
 
+void ModuleDecl::write(int Indent, std::ostream* Out) const {
+  startLine(Indent, Out);
+  *Out << "module";
+  bool First = true;
+  for (auto NamePart : ModuleName) {
+    *Out << (First ? " " : ".") << NamePart.str();
+    First = false;
+  }
+  endLine(Out);
+}
+
 void ReturnStatement::write(int Indent, std::ostream* Out) const {
   startLine(Indent, Out);
   *Out << "return";
@@ -162,7 +173,8 @@ void VarStatement::write(int Indent, std::ostream* Out) const {
   endLine(Out);
 }
 
-FileAST::FileAST(llvm::StringRef Filename, llvm::StringRef Directory) {
+FileAST::FileAST(llvm::StringRef Filename, llvm::StringRef Directory)
+  : ModuleDeclaration(nullptr) {
 }
 
 FileAST::~FileAST() {

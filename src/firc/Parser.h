@@ -58,6 +58,7 @@ private:
 
   ProcedureAST* parseProcedure();
   VarDecl* parseConstDecl();
+  ModuleDecl* parseModuleDecl();
   VarDecl* parseVarDecl();
 
   Statement* parseStatement();

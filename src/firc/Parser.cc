@@ -47,6 +47,7 @@ void Parser::parse() {
     case TOKEN_NEWLINE:
     case TOKEN_COMMENT:
     case TOKEN_CONST:
+    case TOKEN_MODULE:
     case TOKEN_PROC:
     case TOKEN_VAR:
       TopLevelStatement.reset(parseStatement());
@@ -320,6 +321,10 @@ Statement* Parser::parseStatement() {
     Result.reset(parseConstStatement());
     break;
 
+  case TOKEN_MODULE:
+    Result.reset(parseModuleDecl());
+    break;
+
   case TOKEN_PROC:
     SingleLine = false;
     Result.reset(parseProcedure());
@@ -341,12 +346,16 @@ Statement* Parser::parseStatement() {
     SourceLocation Loc;
     setLocation(Lexer->CurTokenLine, Lexer->CurTokenColumn, &Loc);
     reportError("Expected a statement", Loc);
+    break;
+  }
+  }
+
+  if (!Result) {
     while (Lexer->CurToken != TOKEN_NEWLINE && Lexer->CurToken != TOKEN_EOF) {
       Lexer->Advance();
     }
     Lexer->Advance();
     return nullptr;
-  }
   }
 
   if (SingleLine && Lexer->CurToken == TOKEN_COMMENT) {
@@ -360,6 +369,34 @@ Statement* Parser::parseStatement() {
   }
 
   Lexer->Advance();
+  return Result.release();
+}
+
+ModuleDecl* Parser::parseModuleDecl() {
+  std::unique_ptr<ModuleDecl> Result(new ModuleDecl());
+  if (!expectSymbol(TOKEN_MODULE)) {
+    return nullptr;
+  }
+  setLocation(Lexer->CurTokenLine, Lexer->CurTokenColumn, &Result->Location);
+  if (Lexer->CurTokenColumn > 1) {
+    reportError(u8"Module declaration must be at top level", Result->Location);
+    return nullptr;
+  }
+  Lexer->Advance();
+  if (!expectSymbol(TOKEN_IDENTIFIER)) {
+    return nullptr;
+  }
+  Result->ModuleName.push_back(Lexer->CurTokenText);
+  Lexer->Advance();
+  while (Lexer->CurToken == TOKEN_DOT) {
+    Lexer->Advance();
+    if (!expectSymbol(TOKEN_IDENTIFIER)) {
+      return nullptr;
+    }
+    Result->ModuleName.push_back(Lexer->CurTokenText);
+    Lexer->Advance();
+  }
+  FileAST->ModuleDeclaration = Result.get();
   return Result.release();
 }
 
