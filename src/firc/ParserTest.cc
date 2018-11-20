@@ -133,15 +133,18 @@ TEST(ParserTest, VarStatement) {
   EXPECT_EQ(parse("proc P():\n var i#C\n"), "proc P():\n    var i  # C\n");
 }
 
-TEST(ParserTest, BinOpExpr) {
+TEST(ParserTest, BinaryExpr) {
   EXPECT_EQ(parseExpr("2 + 3"), "2 + 3");
   EXPECT_EQ(parseExpr("2 + 3 + 4"), "2 + 3 + 4");
   EXPECT_EQ(parseExpr("2 + 3 * 4"), "2 + 3 * 4");
+  EXPECT_EQ(parseExpr("(2 + 3) * 4"), "(2 + 3) * 4");
   EXPECT_EQ(parseExpr("2 * 3 + 4"), "2 * 3 + 4");
   EXPECT_EQ(parseExpr("2 * (3 + 4)"), "2 * (3 + 4)");
+  EXPECT_EQ(parseExpr("foo.bar + 3"), "foo.bar + 3");
+  EXPECT_EQ(parseExpr("foo.bar + bar.baz"), "foo.bar + bar.baz");
 }
 
-TEST(ParserTest, BinOpExpr_RedundantParentheses) {
+TEST(ParserTest, BinaryExpr_ShouldRemoveRedundantParentheses) {
   EXPECT_EQ(parseExpr("2 + (3 + 4)"), "2 + 3 + 4");
   EXPECT_EQ(parseExpr("2 + (3 + (4))"), "2 + 3 + 4");
   EXPECT_EQ(parseExpr("(2 + 3 + 4)"), "2 + 3 + 4");
