@@ -55,6 +55,8 @@ public:
   ~Lexer();
   bool Advance();
   void skipAnythingIndented();
+  static int getPrecedence(TokenType Operator);
+
   TokenType CurToken, NextToken;
   llvm::StringRef CurTokenText, NextTokenText;
   uint32_t CurTokenLine, CurTokenColumn, NextTokenLine, NextTokenColumn;

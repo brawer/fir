@@ -336,6 +336,22 @@ void Lexer::skipAnythingIndented() {
   }
 }
 
+int Lexer::getPrecedence(TokenType Operator) {
+  switch (Operator) {
+  case TOKEN_PLUS:
+  case TOKEN_MINUS:
+    return 20;
+
+  case TOKEN_ASTERISK:
+  case TOKEN_SLASH:
+  case TOKEN_PERCENT:
+    return 40;
+
+  default:
+    return -1;
+  }
+}
+
 llvm::StringRef Lexer::ConvertToNFKC(const llvm::StringRef UTF8) {
   // Decompose to NFKD.
   llvm::SmallVector<uint32_t, 16> Text;

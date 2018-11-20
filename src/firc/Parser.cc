@@ -108,6 +108,50 @@ bool Parser::isAtExprStart() const {
 }
 
 Expr* Parser::parseExpr() {
+  std::unique_ptr<Expr> Result(parsePrimaryExpr());
+  if (!Result) {
+    return nullptr;
+  }
+
+  if (Lexer::getPrecedence(Lexer->CurToken) >= 0) {
+    return parseBinOpRHS(0, Result.release());
+  } else {
+    return Result.release();
+  }
+}
+
+Expr* Parser::parseBinOpRHS(int Precedence, Expr* LHS) {
+  while (true) {
+    const int CurPrecedence = Lexer::getPrecedence(Lexer->CurToken);
+    if (CurPrecedence < Precedence) {
+      return LHS;
+    }
+
+    const TokenType Operator = Lexer->CurToken;
+    const uint32_t OperatorLine = Lexer->CurTokenLine;
+    const uint32_t OperatorColumn = Lexer->CurTokenColumn;
+    Lexer->Advance();
+
+    Expr* RHS = parsePrimaryExpr();
+    if (!RHS) {
+      return nullptr;
+    }
+
+    // If BinOp binds less tightly with RHS than the operator after RHS, let
+    // the pending operator take RHS as its LHS.
+    const int NextPrecedence = Lexer::getPrecedence(Lexer->CurToken);
+    if (CurPrecedence < NextPrecedence) {
+      RHS = parseBinOpRHS(CurPrecedence + 1, RHS);
+      if (!RHS) {
+        return nullptr;
+      }
+    }
+
+    LHS = new BinaryExpr(LHS, Operator, RHS);
+  }
+}
+
+Expr* Parser::parsePrimaryExpr() {
   std::unique_ptr<Expr> Result;
   switch (Lexer->CurToken) {
   case TOKEN_LEFT_PARENTHESIS: {

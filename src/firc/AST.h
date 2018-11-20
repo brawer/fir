@@ -21,6 +21,7 @@
 #include <llvm/ADT/APSInt.h>
 #include <llvm/ADT/StringRef.h>
 #include <llvm/Support/Allocator.h>
+#include "firc/Lexer.h"
 
 namespace firc {
 
@@ -49,6 +50,7 @@ class Expr {
 public:
   virtual ~Expr() {}
   virtual void write(std::ostream* Out) const = 0;
+  virtual int getPrecedence() const;
   SourceLocation Location;
 };
 
@@ -58,6 +60,16 @@ public:
   virtual ~BoolExpr() {}
   virtual void write(std::ostream* Out) const;
   bool Value;
+};
+
+class BinaryExpr : public Expr {
+public:
+  explicit BinaryExpr(Expr* LHS, TokenType Operator, Expr* RHS);
+  virtual ~BinaryExpr() {}
+  virtual void write(std::ostream* Out) const;
+  virtual int getPrecedence() const;
+  std::unique_ptr<Expr> LHS, RHS;
+  TokenType Operator;
 };
 
 class DotExpr : public Expr {

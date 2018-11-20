@@ -39,8 +39,44 @@ void TypeRef::write(std::ostream* Out) const {
 Statement::~Statement() {
 }
 
+int Expr::getPrecedence() const {
+  return -1;
+}
+
 void BoolExpr::write(std::ostream* Out) const {
   *Out << (Value ? "true" : "false");
+}
+
+BinaryExpr::BinaryExpr(Expr* LHS, TokenType Operator, Expr* RHS)
+  : LHS(LHS), RHS(RHS), Operator(Operator) {
+}
+
+void BinaryExpr::write(std::ostream* Out) const {
+  const int MyPrec = getPrecedence();
+  const int LeftPrec = LHS->getPrecedence();
+  const int RightPrec = RHS->getPrecedence();
+  const bool NeedLHSParen = MyPrec > LeftPrec && LeftPrec > 0;
+  const bool NeedRHSParen = MyPrec > RightPrec && RightPrec > 0;
+  if (NeedLHSParen) *Out << '(';
+  LHS->write(Out);
+  if (NeedLHSParen) *Out << ')';
+
+  switch (Operator) {
+  case TOKEN_PLUS: *Out << " + "; break;
+  case TOKEN_MINUS: *Out << " + "; break;
+  case TOKEN_ASTERISK: *Out << " * "; break;
+  case TOKEN_SLASH: *Out << " / "; break;
+  case TOKEN_PERCENT: *Out << " % "; break;
+  default: *Out << " <ERROR> "; break;
+  }
+
+  if (NeedRHSParen) *Out << '(';
+  RHS->write(Out);
+  if (NeedRHSParen) *Out << ')';
+}
+
+int BinaryExpr::getPrecedence() const {
+  return Lexer::getPrecedence(Operator);
 }
 
 void DotExpr::write(std::ostream* Out) const {
