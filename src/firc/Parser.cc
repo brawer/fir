@@ -148,6 +148,7 @@ Expr* Parser::parseBinOpRHS(int Precedence, Expr* LHS) {
     }
 
     LHS = new BinaryExpr(LHS, Operator, RHS);
+    setLocation(OperatorLine, OperatorColumn, &LHS->Location);
   }
 }
 
