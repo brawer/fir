@@ -142,6 +142,8 @@ TEST(ParserTest, BoolExpr) {
 
 TEST(ParserTest, DotExpr) {
   EXPECT_EQ(parseExpr("1 .add"), "1 .add");
+  EXPECT_EQ(parseExpr("foo.bar"), "foo.bar");
+  // TODO: EXPECT_EQ(parseExpr("foo.bar"), "foo.bar");
   EXPECT_EQ(parseExpr("nil.toString"), "nil.toString");
   EXPECT_EQ(parseExpr("true.toString"), "true.toString");
 }
@@ -153,6 +155,10 @@ TEST(ParserTest, IntExpr) {
   EXPECT_EQ(parseExpr("12345678901234567890123456789012345678901234567890"),
             "12345678901234567890123456789012345678901234567890");
   EXPECT_EQ(parse("123\n"), ExpectedTopLevelStatement);
+}
+
+TEST(ParserTest, NameExpr) {
+  EXPECT_EQ(parseExpr("foo"), "foo");
 }
 
 TEST(ParserTest, NilExpr) {

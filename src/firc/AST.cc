@@ -62,6 +62,10 @@ void IntExpr::write(std::ostream* Out) const {
   *Out << Value.toString(/*radix*/ 10);
 }
 
+void NameExpr::write(std::ostream* Out) const {
+  *Out << Name.str();
+}
+
 void NilExpr::write(std::ostream* Out) const {
   *Out << "nil";
 }

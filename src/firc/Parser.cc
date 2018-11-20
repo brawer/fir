@@ -95,6 +95,7 @@ bool Parser::parseTypeRef(TypeRef* T) {
 bool Parser::isAtExprStart() const {
   switch (Lexer->CurToken) {
   case TOKEN_LEFT_PARENTHESIS:
+  case TOKEN_IDENTIFIER:
   case TOKEN_INTEGER:
   case TOKEN_NIL:
   case TOKEN_FALSE:
@@ -116,6 +117,11 @@ Expr* Parser::parseExpr() {
 
   case TOKEN_FALSE: {
     Result.reset(new BoolExpr(false));
+    break;
+  }
+
+  case TOKEN_IDENTIFIER: {
+    Result.reset(new NameExpr(Lexer->CurTokenText));
     break;
   }
 

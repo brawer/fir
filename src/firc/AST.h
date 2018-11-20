@@ -78,6 +78,14 @@ public:
   llvm::APSInt Value;
 };
 
+class NameExpr : public Expr {
+public:
+  explicit NameExpr(llvm::StringRef Name) : Name(Name) {}
+  virtual ~NameExpr() {}
+  virtual void write(std::ostream* Out) const;
+  llvm::StringRef Name;
+};
+
 class NilExpr : public Expr {
 public:
   explicit NilExpr() {}
