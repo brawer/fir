@@ -202,7 +202,7 @@ Expr* Parser::parsePrimaryExpr() {
     Lexer->Advance();
   }
 
-  if (Lexer->CurToken == TOKEN_DOT) {
+  while (Lexer->CurToken == TOKEN_DOT) {
     uint32_t DotLine = Lexer->CurTokenLine;
     uint32_t DotColumn = Lexer->CurTokenColumn;
     Lexer->Advance();
@@ -215,7 +215,7 @@ Expr* Parser::parsePrimaryExpr() {
     setLocation(Lexer->CurTokenLine, Lexer->CurTokenColumn,
                 &DotEx->NameLocation);
     Lexer->Advance();
-    return DotEx.release();
+    Result.reset(DotEx.release());
   }
 
   return Result.release();

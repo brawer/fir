@@ -158,8 +158,9 @@ TEST(ParserTest, BoolExpr) {
 
 TEST(ParserTest, DotExpr) {
   EXPECT_EQ(parseExpr("1 .add"), "1 .add");
+  EXPECT_EQ(parseExpr("(1 + 2).equals"), "(1 + 2).equals");
   EXPECT_EQ(parseExpr("foo.bar"), "foo.bar");
-  // TODO: EXPECT_EQ(parseExpr("foo.bar"), "foo.bar");
+  EXPECT_EQ(parseExpr("foo.bar.baz.qux"), "foo.bar.baz.qux");
   EXPECT_EQ(parseExpr("nil.toString"), "nil.toString");
   EXPECT_EQ(parseExpr("true.toString"), "true.toString");
 }

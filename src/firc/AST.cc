@@ -80,7 +80,10 @@ int BinaryExpr::getPrecedence() const {
 }
 
 void DotExpr::write(std::ostream* Out) const {
+  const bool IsOperator = LHS->getPrecedence() >= 0;
+  if (IsOperator) *Out << '(';
   LHS->write(Out);
+  if (IsOperator) *Out << ')';
   if (dynamic_cast<IntExpr*>(LHS.get()) != nullptr) {
     *Out << ' ';
   }
