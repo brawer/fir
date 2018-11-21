@@ -168,6 +168,7 @@ public:
   ~FileAST();
   void write(std::ostream* Out) const;
 
+  llvm::BumpPtrAllocator Allocator;  // for temp objects, eg. converted tokens
   llvm::SmallVector<Statement*, 32> Body;
   ModuleDecl* ModuleDeclaration;
 };

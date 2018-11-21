@@ -21,20 +21,21 @@
 
 namespace firc {
 
-firc::FileAST* Parser::parseFile(llvm::StringRef Filename,
+firc::FileAST* Parser::parseFile(const llvm::MemoryBuffer* Buffer,
+                                 llvm::StringRef Filename,
                                  llvm::StringRef Directory,
-                                 const llvm::MemoryBuffer* Buf,
-                                 llvm::BumpPtrAllocator* Allocator,
                                  ErrorHandler ErrHandler) {
-  firc::Lexer lexer(Filename, Directory, Buf, Allocator);
-  firc::Parser parser(&lexer, ErrHandler);
+  firc::Parser parser(Buffer, Filename, Directory, ErrHandler);
   parser.parse();
   return parser.FileAST.release();
 }
 
-Parser::Parser(firc::Lexer* Lexer, ErrorHandler ErrHandler)
-  : Lexer(Lexer), ErrHandler(ErrHandler),
-    FileAST(new firc::FileAST(Lexer->Filename, Lexer->Directory)) {
+Parser::Parser(const llvm::MemoryBuffer* Buffer,
+               llvm::StringRef Filename, llvm::StringRef Directory,
+               ErrorHandler ErrHandler)
+  : FileAST(new firc::FileAST(Lexer->Filename, Lexer->Directory)),
+    Lexer(new class Lexer(Filename, Directory, Buffer, &FileAST->Allocator)),
+    ErrHandler(ErrHandler) {
 }
 
 Parser::~Parser() {

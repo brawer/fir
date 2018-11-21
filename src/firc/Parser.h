@@ -36,14 +36,15 @@ typedef std::function<void(llvm::StringRef, const SourceLocation&)>
 class Parser {
 public:
   static firc::FileAST* parseFile(
+      const llvm::MemoryBuffer* Buffer,
       llvm::StringRef Filename,
       llvm::StringRef Directory,
-      const llvm::MemoryBuffer* Buf,
-      llvm::BumpPtrAllocator* Allocator,
       ErrorHandler ErrHandler);
 
 private:
-  Parser(firc::Lexer* lexer, ErrorHandler ErrHandler);
+  Parser(const llvm::MemoryBuffer* Buffer,
+         llvm::StringRef Filename, llvm::StringRef Directory,
+         ErrorHandler ErrHandler);
   ~Parser();
 
   void parse();
@@ -70,9 +71,9 @@ private:
   void reportError(const std::string& Error, const SourceLocation &Loc);
   void setLocation(uint32_t Line, uint32_t Column, SourceLocation *Loc);
 
-  firc::Lexer* Lexer;
-  ErrorHandler ErrHandler;
   std::unique_ptr<firc::FileAST> FileAST;
+  std::unique_ptr<firc::Lexer> Lexer;
+  ErrorHandler ErrHandler;
 };
 
 }  // namespace firc

@@ -1,7 +1,6 @@
 #include <memory>
 #include <sstream>
 #include <llvm/ADT/StringRef.h>
-#include <llvm/Support/Allocator.h>
 #include <llvm/Support/MemoryBuffer.h>
 
 #include "firc/AST.h"
@@ -11,7 +10,6 @@
 namespace firc {
 
 std::string parse(llvm::StringRef s) {
-  llvm::BumpPtrAllocator Allocator;
   std::unique_ptr<llvm::MemoryBuffer> Buf(llvm::MemoryBuffer::getMemBuffer(s));
   std::ostringstream Errors;
   ErrorHandler ErrHandler =
@@ -20,7 +18,7 @@ std::string parse(llvm::StringRef s) {
            << '\n';
   };
   std::unique_ptr<FileAST> AST(
-      Parser::parseFile("test.fir", "", Buf.get(), &Allocator, ErrHandler));
+      Parser::parseFile(Buf.get(), "test.fir", "", ErrHandler));
   std::ostringstream Out;
   AST->write(&Out);
   return Out.str() + Errors.str();
