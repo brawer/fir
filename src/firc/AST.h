@@ -173,6 +173,7 @@ public:
 
   llvm::BumpPtrAllocator Allocator;  // for temp objects, eg. converted tokens
   llvm::SmallVector<Statement*, 32> Body;
+  llvm::StringRef Filename, Directory;
   ModuleDecl* ModuleDeclaration;
 };
 

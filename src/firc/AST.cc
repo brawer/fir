@@ -174,7 +174,7 @@ void VarStatement::write(int Indent, std::ostream* Out) const {
 }
 
 FileAST::FileAST(llvm::StringRef Filename, llvm::StringRef Directory)
-  : ModuleDeclaration(nullptr) {
+  : Filename(Filename), Directory(Directory), ModuleDeclaration(nullptr) {
 }
 
 FileAST::~FileAST() {

@@ -13,8 +13,9 @@ std::string parse(llvm::StringRef s) {
   std::unique_ptr<llvm::MemoryBuffer> Buf(llvm::MemoryBuffer::getMemBuffer(s));
   std::ostringstream Errors;
   ErrorHandler ErrHandler =
-      [&Errors](llvm::StringRef Err, const SourceLocation& Loc) {
-    Errors << "Error:" << Loc.Line << ':' << Loc.Column << ": " << Err.str()
+    [&Errors](llvm::StringRef File, int32_t Line, int32_t Column,
+             llvm::StringRef Err) {
+    Errors << "Error:" << Line << ':' << Column << ": " << Err.str()
            << '\n';
   };
   std::unique_ptr<FileAST> AST(

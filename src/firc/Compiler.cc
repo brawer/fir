@@ -18,12 +18,13 @@
 #include <llvm/ADT/StringRef.h>
 #include <llvm/ADT/Twine.h>
 #include <llvm/Support/FileSystem.h>
+#include <llvm/Support/Path.h>
 #include <llvm/Support/ThreadPool.h>
 #include <llvm/Support/thread.h>
 #include "firc/AST.h"
 #include "firc/Compiler.h"
-#include "firc/Lexer.h"
 #include "firc/Parser.h"
+#include "firc/SourceFile.h"
 
 namespace firc {
 
@@ -44,6 +45,8 @@ bool Compiler::compile(llvm::StringRef Path) {
     std::error_code Error;
     llvm::sys::fs::recursive_directory_iterator DirIt(Path, Error), DirEnd;
     if (Error) {
+      reportError(Path, Error);
+      return false;
     }
     while (DirIt != DirEnd) {
       if (Error) {
@@ -57,9 +60,19 @@ bool Compiler::compile(llvm::StringRef Path) {
     }
   }
 
-  auto compileAsync = [](const std::string& SourceFile) {
-    std::cerr << "TODO: Compile " << SourceFile << std::endl;
+  auto compileAsync = [](const std::string& Source) {
+    llvm::StringRef ParentDir = llvm::sys::path::parent_path(Source);
+    llvm::StringRef Filename = llvm::sys::path::filename(Source);
+    ErrorHandler ErrHandler = [&](llvm::StringRef File,
+                                  uint32_t Line, uint32_t Column,
+                                  llvm::StringRef Error) {
+      std::cerr << File.str() << ':' << Line << ':' << Column << ": "
+                << Error.str() << std::endl;
+    };
+    std::unique_ptr<SourceFile> Src(new SourceFile(Filename, ParentDir));
+    return Src->parse(ErrHandler);
   };
+
   if (Files.size() == 0) {
     return false;
   } else if (Files.size() == 1) {

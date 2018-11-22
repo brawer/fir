@@ -30,8 +30,8 @@ class MemoryBuffer;
 
 namespace firc {
 
-typedef std::function<void(llvm::StringRef, const SourceLocation&)>
-    ErrorHandler;
+typedef std::function<void(llvm::StringRef, uint32_t, uint32_t,
+                           llvm::StringRef)> ErrorHandler;
 
 class Parser {
 public:

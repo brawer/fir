@@ -33,7 +33,7 @@ firc::FileAST* Parser::parseFile(const llvm::MemoryBuffer* Buffer,
 Parser::Parser(const llvm::MemoryBuffer* Buffer,
                llvm::StringRef Filename, llvm::StringRef Directory,
                ErrorHandler ErrHandler)
-  : FileAST(new firc::FileAST(Lexer->Filename, Lexer->Directory)),
+  : FileAST(new firc::FileAST(Filename, Directory)),
     Lexer(new class Lexer(Filename, Directory, Buffer, &FileAST->Allocator)),
     ErrHandler(ErrHandler) {
 }
@@ -549,7 +549,7 @@ bool Parser::expectSymbol(TokenType Token) {
 }
 
 void Parser::reportError(const std::string& Error, const SourceLocation &Loc) {
-  ErrHandler(Error, Loc);
+  ErrHandler(Loc.File->Filename, Loc.Line, Loc.Column, Error);
 }
 
 void Parser::setLocation(uint32_t Line, uint32_t Column, SourceLocation *Loc) {
