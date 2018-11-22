@@ -31,14 +31,15 @@ namespace firc {
 Lexer::Lexer(llvm::StringRef Filename, llvm::StringRef Directory,
              const llvm::MemoryBuffer* buffer,
              llvm::BumpPtrAllocator* allocator)
-  : Filename(Filename), Directory(Directory),
+  : CurToken(TOKEN_EOF), NextToken(TOKEN_EOF),
+    CurTokenLine(0), CurTokenColumn(0), NextTokenLine(0), NextTokenColumn(0),
+    Filename(Filename), Directory(Directory),
     BufferPos(
         reinterpret_cast<const unsigned char*>(buffer->getBufferStart())),
     BufferEnd(reinterpret_cast<const unsigned char*>(buffer->getBufferEnd())),
     CurCharPos(BufferPos), NextCharPos(BufferPos),
-    CurChar(0), NextChar(0x000A), Line(0), Column(0),
-    CurToken(TOKEN_EOF), NextToken(TOKEN_EOF),
-    CurTokenLine(0), CurTokenColumn(0), NextTokenLine(0), NextTokenColumn(0),
+    CurChar(0), NextChar(0x000A),
+    Line(0), Column(0),
     Allocator(allocator) {
   // Skip file-initial U+FEFF Byte Order Mark, which is used by
   // some Windows editors to indicate UTF-8 encoding.

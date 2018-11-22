@@ -141,6 +141,7 @@ public:
 class VarDecl {
 public:
   VarDecl(const Names &Names, const TypeRef &Type, Expr *Value);
+  virtual ~VarDecl() {}
   virtual void write(std::ostream *Out) const;
   Names VarNames;
   TypeRef Type;
