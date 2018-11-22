@@ -34,7 +34,7 @@ find_package(LLVM REQUIRED CONFIG)
 # ---------------------------------------------------------------------------
 
 add_library(FircLib
-    AST.cc AST.h Lexer.cc Lexer.h Parser.cc Parser.h
+    AST.cc AST.h Compiler.cc Compiler.h Lexer.cc Lexer.h Parser.cc Parser.h
     GeneratedCharsets.cc
 )
 

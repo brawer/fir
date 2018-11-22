@@ -20,7 +20,7 @@
 #include "llvm/Support/CommandLine.h"
 #include <llvm/Support/MemoryBuffer.h>
 
-#include "firc/Lexer.h"
+#include "firc/Compiler.h"
 
 llvm::cl::opt<std::string> Command(
     llvm::cl::Positional, llvm::cl::Required,
@@ -32,7 +32,8 @@ llvm::cl::opt<std::string> Input(
 int main(int argc, char** argv) {
   llvm::cl::ParseCommandLineOptions(argc, argv);
   if (Command == "build") {
-    std::cerr << "TODO: Build " << Input << std::endl;
+    firc::Compiler Compiler;
+    return Compiler.compile(Input) ? 0 : 1;
   } else if (Command == "format" || Command == "run") {
     std::cerr << "command ‘" << Command << "’ not yet implemented"
               << std::endl;
