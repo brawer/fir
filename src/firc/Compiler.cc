@@ -22,9 +22,9 @@
 #include <llvm/Support/ThreadPool.h>
 #include <llvm/Support/thread.h>
 #include "firc/AST.h"
+#include "firc/CompiledFile.h"
 #include "firc/Compiler.h"
 #include "firc/Parser.h"
-#include "firc/SourceFile.h"
 
 namespace firc {
 
@@ -69,8 +69,9 @@ bool Compiler::compile(llvm::StringRef Path) {
       std::cerr << File.str() << ':' << Line << ':' << Column << ": "
                 << Error.str() << std::endl;
     };
-    std::unique_ptr<SourceFile> Src(new SourceFile(Filename, ParentDir));
-    return Src->parse(ErrHandler);
+    std::unique_ptr<CompiledFile> CFile(new CompiledFile(Filename, ParentDir));
+    CFile->parse(ErrHandler);
+    return CFile.release();
   };
 
   if (Files.size() == 0) {

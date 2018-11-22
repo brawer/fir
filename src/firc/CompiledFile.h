@@ -13,8 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef FIRC_SOURCE_FILE_H_
-#define FIRC_SOURCE_FILE_H_
+#ifndef FIRC_COMPILED_FILE_H_
+#define FIRC_COMPILED_FILE_H_
 
 #include <memory>
 #include <llvm/ADT/StringRef.h>
@@ -25,10 +25,10 @@
 
 namespace firc {
 
-class SourceFile {
+class CompiledFile {
 public:
-  SourceFile(llvm::StringRef Filepath, llvm::StringRef Directory);
-  ~SourceFile();
+  CompiledFile(llvm::StringRef Filepath, llvm::StringRef Directory);
+  ~CompiledFile();
   void parse(ErrorHandler Err);
 
 private:
@@ -39,4 +39,4 @@ private:
 
 } // namespace firc
 
-#endif  // FIRC_SOURCE_FILE_H_
+#endif  // FIRC_COMPILED_FILE_H_

@@ -21,18 +21,18 @@
 #include <llvm/Support/Path.h>
 
 #include "firc/Parser.h"
-#include "firc/SourceFile.h"
+#include "firc/CompiledFile.h"
 
 namespace firc {
 
-SourceFile::SourceFile(llvm::StringRef Filepath, llvm::StringRef Directory)
+CompiledFile::CompiledFile(llvm::StringRef Filepath, llvm::StringRef Directory)
   : Filepath(Filepath), Directory(Directory) {
 }
 
-SourceFile::~SourceFile() {
+CompiledFile::~CompiledFile() {
 }
 
-void SourceFile::parse(ErrorHandler ErrHandler) {
+void CompiledFile::parse(ErrorHandler ErrHandler) {
   llvm::SmallVector<char, 200> path;
   llvm::sys::path::append(path, Directory, Filepath);
   llvm::StringRef SrcPath(path.data(), path.size());
