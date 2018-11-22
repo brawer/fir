@@ -17,17 +17,29 @@
 #include <memory>
 
 #include <llvm/ADT/StringRef.h>
+#include "llvm/Support/CommandLine.h"
 #include <llvm/Support/MemoryBuffer.h>
 
 #include "firc/Lexer.h"
 
+llvm::cl::opt<std::string> Command(
+    llvm::cl::Positional, llvm::cl::Required,
+    llvm::cl::desc("<build|format|run>"), llvm::cl::init("build"));
+
+llvm::cl::opt<std::string> Input(
+    llvm::cl::Positional, llvm::cl::Required, llvm::cl::desc("<Input>"));
+
 int main(int argc, char** argv) {
-  llvm::StringRef s("Foo Bar Baz");
-  llvm::BumpPtrAllocator allocator;
-  std::unique_ptr<llvm::MemoryBuffer> buf(llvm::MemoryBuffer::getMemBuffer(s));
-  firc::Lexer lexer("hello.fir", "path/to/module", buf.get(), &allocator);
-  std::cout << "Hello world" << std::endl;
-  while (lexer.Advance()) {
+  llvm::cl::ParseCommandLineOptions(argc, argv);
+  if (Command == "build") {
+    std::cerr << "TODO: Build " << Input << std::endl;
+  } else if (Command == "format" || Command == "run") {
+    std::cerr << "command ‘" << Command << "’ not yet implemented"
+              << std::endl;
+    return 1;
+  } else {
+    std::cerr << "command must be ‘build’, ‘format’, or ‘run’" << std::endl;
+    return 1;
   }
   return 0;
 }

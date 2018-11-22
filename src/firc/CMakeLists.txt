@@ -29,7 +29,6 @@ endif()
 list(APPEND CMAKE_PREFIX_PATH "${LLVM_ROOT}/lib/cmake/llvm")
 find_package(LLVM REQUIRED CONFIG)
 
-
 # ---------------------------------------------------------------------------
 # FircLib
 # ---------------------------------------------------------------------------
@@ -56,7 +55,8 @@ target_include_directories(FircLib
 target_link_directories(FircLib
     PRIVATE ${LLVM_LIBRARY_DIRS})
 
-target_link_libraries(FircLib LLVMSupport)
+llvm_map_components_to_libnames(firc_llvm_libs Core Support Option)
+target_link_libraries(FircLib ${firc_llvm_libs})
 
 
 # ---------------------------------------------------------------------------
@@ -72,6 +72,8 @@ set_target_properties(firc PROPERTIES
     CXX_STANDARD_REQUIRED YES
     CXX_EXTENSIONS NO
 )
+
+target_compile_options(firc PRIVATE -fno-rtti -Wall)
 
 target_include_directories(firc
     PRIVATE .. ${LLVM_INCLUDE_DIRS})
