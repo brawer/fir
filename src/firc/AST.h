@@ -53,6 +53,7 @@ public:
   virtual ~Expr() {}
   virtual void write(std::ostream* Out) const = 0;
   virtual int getPrecedence() const;
+  virtual bool needsSpaceBeforeDot() const { return false; }
   SourceLocation Location;
 };
 
@@ -89,6 +90,7 @@ public:
   explicit IntExpr(llvm::APSInt Value);
   virtual ~IntExpr();
   virtual void write(std::ostream* Out) const;
+  virtual bool needsSpaceBeforeDot() const { return true; }
   llvm::APSInt Value;
 };
 

@@ -84,7 +84,7 @@ void DotExpr::write(std::ostream* Out) const {
   if (IsOperator) *Out << '(';
   LHS->write(Out);
   if (IsOperator) *Out << ')';
-  if (dynamic_cast<IntExpr*>(LHS.get()) != nullptr) {
+  if (LHS->needsSpaceBeforeDot()) {
     *Out << ' ';
   }
   *Out << '.' << Name.str();

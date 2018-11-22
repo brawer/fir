@@ -47,7 +47,7 @@ set_target_properties(FircLib PROPERTIES
 target_compile_definitions(FircLib
     PRIVATE ${LLVM_DEFINITIONS})
 
-target_compile_options(FircLib PRIVATE -Wall)
+target_compile_options(FircLib PRIVATE -fno-rtti -Wall)
 
 target_include_directories(FircLib
     PRIVATE ..
