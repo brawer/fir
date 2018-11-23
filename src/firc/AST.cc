@@ -166,9 +166,10 @@ void ImportDecl::write(std::ostream* Out) const {
 void ModuleDecl::write(int Indent, std::ostream* Out) const {
   startLine(Indent, Out);
   *Out << "module";
+
   bool First = true;
   for (auto NamePart : ModuleName) {
-    *Out << (First ? " " : ".") << NamePart.str();
+    *Out << (First ? " " : ".") << NamePart.Text.str();
     First = false;
   }
   endLine(Out);

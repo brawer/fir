@@ -155,7 +155,7 @@ public:
   ModuleDecl() {}
   virtual ~ModuleDecl() {}
   virtual void write(int Indent, std::ostream* Out) const;
-  Names ModuleName;
+  DottedName ModuleName;
 };
 
 class ReturnStatement : public Statement {

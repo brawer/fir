@@ -460,18 +460,8 @@ ModuleDecl* Parser::parseModuleDecl() {
     return nullptr;
   }
   Lexer->Advance();
-  if (!expectSymbol(TOKEN_IDENTIFIER)) {
+  if (!parseDottedName(&Result->ModuleName)) {
     return nullptr;
-  }
-  Result->ModuleName.push_back(Lexer->CurTokenText);
-  Lexer->Advance();
-  while (Lexer->CurToken == TOKEN_DOT) {
-    Lexer->Advance();
-    if (!expectSymbol(TOKEN_IDENTIFIER)) {
-      return nullptr;
-    }
-    Result->ModuleName.push_back(Lexer->CurTokenText);
-    Lexer->Advance();
   }
   FileAST->ModuleDeclaration = Result.get();
   return Result.release();
