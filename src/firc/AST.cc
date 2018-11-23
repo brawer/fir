@@ -141,6 +141,28 @@ void EmptyStatement::write(int Indent, std::ostream* Out) const {
   *Out << '\n';
 }
 
+void ImportStatement::write(int Indent, std::ostream* Out) const {
+  startLine(Indent, Out);
+  *Out << "import ";
+  bool First = true;
+  for (ImportDecl* Decl : Decls) {
+    if (First) First = false; else *Out << ", ";
+    Decl->write(Out);
+  }
+  endLine(Out);
+}
+
+void ImportDecl::write(std::ostream* Out) const {
+  bool First = true;
+  for (const Name& N: ModuleRef) {
+    if (First) First = false; else *Out << '.';
+    *Out << N.Text.str();
+  }
+  if (!AsName.Text.empty()) {
+    *Out << " as " << AsName.Text.str();
+  }
+}
+
 void ModuleDecl::write(int Indent, std::ostream* Out) const {
   startLine(Indent, Out);
   *Out << "module";

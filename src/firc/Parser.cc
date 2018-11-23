@@ -48,6 +48,7 @@ void Parser::parse() {
     case TOKEN_NEWLINE:
     case TOKEN_COMMENT:
     case TOKEN_CONST:
+    case TOKEN_IMPORT:
     case TOKEN_MODULE:
     case TOKEN_PROC:
     case TOKEN_VAR:
@@ -90,6 +91,32 @@ bool Parser::parseTypeRef(TypeRef* T) {
     }
     T->QualifiedName.push_back(Lexer->CurTokenText);
     Lexer->Advance();
+  }
+  return true;
+}
+
+bool Parser::parseName(Name* N) {
+  if (!expectSymbol(TOKEN_IDENTIFIER)) {
+    return false;
+  }
+  N->Text = Lexer->CurTokenText;
+  setLocation(Lexer->CurTokenLine, Lexer->CurTokenColumn, &N->Location);
+  Lexer->Advance();
+  return true;
+}
+
+bool Parser::parseDottedName(DottedName* D) {
+  Name N;
+  if (!parseName(&N)) {
+    return false;
+  }
+  D->push_back(N);
+  while (Lexer->CurToken == TOKEN_DOT) {
+    Lexer->Advance();
+    if (!parseName(&N)) {
+      return false;
+    }
+    D->push_back(N);
   }
   return true;
 }
@@ -322,6 +349,15 @@ Statement* Parser::parseStatement() {
     Result.reset(parseConstStatement());
     break;
 
+  case TOKEN_IMPORT: {
+    ImportStatement* Import = parseImportStatement();
+    if (Import) {
+      Result.reset(Import);
+      FileAST->Imports.push_back(Import);
+    }
+    break;
+  }
+
   case TOKEN_MODULE:
     Result.reset(parseModuleDecl());
     break;
@@ -370,6 +406,46 @@ Statement* Parser::parseStatement() {
   }
 
   Lexer->Advance();
+  return Result.release();
+}
+
+ImportStatement* Parser::parseImportStatement() {
+  if (!expectSymbol(TOKEN_IMPORT)) {
+    return nullptr;
+  }
+  std::unique_ptr<ImportStatement> Result(new ImportStatement());
+  setLocation(Lexer->CurTokenLine, Lexer->CurTokenColumn, &Result->Location);
+  Lexer->Advance();
+
+  std::unique_ptr<ImportDecl> Decl(parseImportDecl());
+  if (!Decl) {
+    return nullptr;
+  }
+  Result->Decls.push_back(Decl.release());
+
+  while (Lexer->CurToken == TOKEN_COMMA) {
+    Lexer->Advance();
+    Decl.reset(parseImportDecl());
+    if (!Decl) {
+      return nullptr;
+    }
+    Result->Decls.push_back(Decl.release());
+  }
+
+  return Result.release();
+}
+
+ImportDecl* Parser::parseImportDecl() {
+  std::unique_ptr<ImportDecl> Result(new ImportDecl());
+  if (!parseDottedName(&Result->ModuleRef)) {
+    return nullptr;
+  }
+  if (Lexer->CurToken == TOKEN_AS) {
+    Lexer->Advance();
+    if (!parseName(&Result->AsName)) {
+      return nullptr;
+    }
+  }
   return Result.release();
 }
 

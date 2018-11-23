@@ -197,8 +197,8 @@ bool Lexer::Advance() {
     case 'a':
       if (NextTokenText == "and") {
         NextToken = TOKEN_AND;
-      } else if (NextTokenText == "and") {
-        NextToken = TOKEN_AND;
+      } else if (NextTokenText == "as") {
+        NextToken = TOKEN_AS;
       }
       break;
 

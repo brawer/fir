@@ -49,6 +49,8 @@ private:
 
   void parse();
   bool parseTypeRef(TypeRef* T);
+  bool parseName(Name* N);
+  bool parseDottedName(DottedName* D);
 
   bool isAtExprStart() const;
   Expr* parseExpr();
@@ -59,6 +61,8 @@ private:
 
   ProcedureAST* parseProcedure();
   VarDecl* parseConstDecl();
+  ImportStatement* parseImportStatement();
+  ImportDecl* parseImportDecl();
   ModuleDecl* parseModuleDecl();
   VarDecl* parseVarDecl();
 

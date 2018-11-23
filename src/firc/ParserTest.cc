@@ -111,6 +111,14 @@ TEST(ParserTest, EmptyStatement) {
   EXPECT_EQ(parse("proc P():\n #\n return\n"), "proc P():\n\n    return\n");
 }
 
+TEST(ParserTest, ImportStatement) {
+  EXPECT_EQ(parse("import X#Comment\n"), "import X  # Comment\n");
+  EXPECT_EQ(parse("import X,Y#Comment\n"), "import X, Y  # Comment\n");
+  EXPECT_EQ(parse("import fir.math#Comm\n"), "import fir.math  # Comm\n");
+  EXPECT_EQ(parse("import fir.math as m, foo.bar.baz as fbb#Comm\n"),
+            "import fir.math as m, foo.bar.baz as fbb  # Comm\n");
+}
+
 TEST(ParserTest, ReturnStatement) {
   EXPECT_EQ(parse("proc P():\n return\n"), "proc P():\n    return\n");
   EXPECT_EQ(parse("proc P():\n return 2\n"), "proc P():\n    return 2\n");

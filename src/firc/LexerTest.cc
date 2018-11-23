@@ -43,6 +43,7 @@ std::string RunLexer(llvm::StringRef s) {
     case TOKEN_SLASH: result += "SLASH"; break;
     case TOKEN_PERCENT: result += "PERCENT"; break;
     case TOKEN_AND: result += "AND"; break;
+    case TOKEN_AS: result += "AS"; break;
     case TOKEN_CLASS: result += "CLASS"; break;
     case TOKEN_CONST: result += "CONST"; break;
     case TOKEN_ELSE: result += "ELSE"; break;
@@ -83,6 +84,7 @@ TEST(LexerTest, ShouldIgnoreByteOrderMark) {
 
 TEST(LexerTest, Keywords) {
   EXPECT_EQ(RunLexer("and"), "AND[and]");
+  EXPECT_EQ(RunLexer("as"), "AS[as]");
   EXPECT_EQ(RunLexer("class"), "CLASS[class]");
   EXPECT_EQ(RunLexer("const"), "CONST[const]");
   EXPECT_EQ(RunLexer("else"), "ELSE[else]");

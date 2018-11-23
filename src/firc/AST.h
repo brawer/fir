@@ -38,6 +38,17 @@ public:
   uint32_t Line, Column;
 };
 
+class Name {
+public:
+  Name() {}
+  Name(llvm::StringRef Text, SourceLocation Loc) : Text(Text), Location(Loc) {}
+  ~Name() {}
+  llvm::StringRef Text;
+  SourceLocation Location;
+};
+
+typedef llvm::SmallVector<Name, 4> DottedName;
+
 class TypeRef {
 public:
   TypeRef();
@@ -126,6 +137,19 @@ public:
   virtual void write(int Indent, std::ostream* Out) const;
 };
 
+class ImportDecl {
+public:
+  DottedName ModuleRef;
+  Name AsName;
+  void write(std::ostream* Out) const;
+};
+
+class ImportStatement : public Statement {
+public:
+  virtual void write(int Indent, std::ostream* Out) const;
+  llvm::SmallVector<ImportDecl*, 4> Decls;
+};
+
 class ModuleDecl : public Statement {
 public:
   ModuleDecl() {}
@@ -175,6 +199,7 @@ public:
   llvm::SmallVector<Statement*, 32> Body;
   llvm::StringRef Filename, Directory;
   ModuleDecl* ModuleDeclaration;
+  llvm::SmallVector<ImportStatement*, 8> Imports;  // anywhere in parsed file
 };
 
 class ProcedureAST : public Statement {
